@@ -30,7 +30,7 @@ export function MobileMenu() {
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetTrigger asChild className="md:hidden">
         <Button variant="ghost" size="icon" aria-label="Open navigation menu">
-          <Menu className="h-6 w-6" />
+          <Menu className="h-6 w-6 stroke-[1.5px]" />
         </Button>
       </SheetTrigger>
 
@@ -59,7 +59,7 @@ export function MobileMenu() {
               onClick={() => setSheetOpen(false)}
               aria-label="Close menu"
             >
-              <X className="h-6 w-6" />
+              <X className="h-6 w-6 stroke-[1.5px]" />
             </Button>
           </div>
 
@@ -73,10 +73,10 @@ export function MobileMenu() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
                     >
                       Home
-                      <ChevronDown className={cn("h-5 w-5 transition-transform", isOpen && "rotate-180")} />
+                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
                     </button>
 
                     {isOpen && (
@@ -111,10 +111,10 @@ export function MobileMenu() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
                     >
                       Rentals
-                      <ChevronDown className={cn("h-5 w-5 transition-transform", isOpen && "rotate-180")} />
+                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
                     </button>
 
                     {isOpen && (
@@ -157,10 +157,10 @@ export function MobileMenu() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
                     >
                       Custom
-                      <ChevronDown className={cn("h-5 w-5 transition-transform", isOpen && "rotate-180")} />
+                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
                     </button>
 
                     {isOpen && (
@@ -195,10 +195,10 @@ export function MobileMenu() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
                     >
                       Explore
-                      <ChevronDown className={cn("h-5 w-5 transition-transform", isOpen && "rotate-180")} />
+                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
                     </button>
 
                     {isOpen && (
