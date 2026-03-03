@@ -1,9 +1,10 @@
 // src/components/layout/logo.tsx
 import Image from "next/image";
+import Link from "next/link";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={`flex items-center gap-3 ${className || ""}`}>
+    <Link href="/" className={`flex items-center justify-center ${className || ""}`}>
       <Image
         src="/images/logo.png"
         alt="TaniTwirl Logo"
@@ -12,9 +13,6 @@ export function Logo({ className }: { className?: string }) {
         priority
         className="object-contain"
       />
-      <span className="font-playfair font-bold text-xl md:text-2xl text-foreground">
-        TaniTwirl
-      </span>
-    </div>
+    </Link>
   );
 }

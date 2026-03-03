@@ -576,10 +576,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Search, User, ShoppingBag, Instagram, Facebook } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 import { Logo } from "./logo";
 import { NavLinks } from "./nav-links";
-import { SearchAuth } from "./search-auth";
 import { MobileMenu } from "./mobile-menu";
 import { isActive } from "./nav-config";
 
@@ -587,19 +589,92 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full p-5  bg-white/70 ">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Logo />
+    <header className="sticky top-0 z-50 w-full bg-white border-b">
+      {/* Top Bar - Social Media Icons */}
+      <div className="border-b bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-10 items-center justify-end">
+            <div className="flex items-center gap-4">
+              {/* TODO: Replace with actual Instagram profile URL */}
+              <Link 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-4 w-4 stroke-[1.5px]" />
+              </Link>
+              {/* TODO: Replace with actual Facebook profile URL */}
+              <Link 
+                href="https://facebook.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-4 w-4 stroke-[1.5px]" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {/* Desktop Navigation */}
-        <NavLinks isActive={(href) => isActive(pathname, href)} />
+      {/* Main Header Row - Search, Logo, Icons */}
+      <div className="border-b">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-20 items-center justify-between">
+            {/* Left: Mobile Menu + Search Icon */}
+            <div className="flex items-center gap-2">
+              <MobileMenu />
+              {/* TODO: Implement search functionality */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="hidden md:flex"
+                aria-label="Search"
+                disabled
+              >
+                <Search className="h-5 w-5 stroke-[1.5px]" />
+              </Button>
+            </div>
 
-        {/* Search + Auth (desktop) */}
-        <SearchAuth />
+            {/* Center: Logo */}
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <Logo />
+            </div>
 
-        {/* Mobile Menu */}
-        <MobileMenu />
+            {/* Right: User and Shopping Bag Icons */}
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                asChild
+                aria-label="Account"
+              >
+                <Link href="/sign-in">
+                  <User className="h-5 w-5 stroke-[1.5px]" />
+                </Link>
+              </Button>
+              {/* TODO: Implement shopping cart functionality */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                aria-label="Shopping bag"
+                disabled
+              >
+                <ShoppingBag className="h-5 w-5 stroke-[1.5px]" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Row - Centered Links */}
+      <div className="hidden md:block">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <NavLinks isActive={(href) => isActive(pathname, href)} />
+        </div>
       </div>
     </header>
   );
