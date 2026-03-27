@@ -9,15 +9,15 @@ const nextConfig: NextConfig = {
 
 	images: {
 		remotePatterns: [
-			// Vercel Blob storage – all stores
+			// Vercel Blob storage – all stores (correct domain)
 			{
 				protocol: "https",
-				hostname: "*.public.blob.vercel.storage",
+				hostname: "*.public.blob.vercel-storage.com",
 			},
 			// Vercel Blob CDN alias
 			{
 				protocol: "https",
-				hostname: "public.blob.vercel.storage",
+				hostname: "public.blob.vercel-storage.com",
 			},
 			// Production app URL (covers same-origin absolute URLs in seeded data)
 			{
