@@ -75,15 +75,15 @@ export default function IdentityVerification() {
   });
 
   return (
-    <div className="flex justify-center">
-      <Card className="border-foreground w-full max-w-150 bg-white">
+    <div className="flex w-full justify-center px-0 sm:px-4">
+      <Card className="border-foreground w-full max-w-md bg-white sm:max-w-2xl md:max-w-2xl">
         <CardHeader>
-          <CardTitle className="text-xl">Identity Verification</CardTitle>
+          <CardTitle className="text-lg md:text-xl">Identity Verification</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="space-y-6">
-            <div>
-              <Label>PAN Number *</Label>
+          <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
+            <div className="space-y-2">
+              <Label className="text-sm md:text-base">PAN Number *</Label>
               <Input
                 {...form.register("panNumber")}
                 onChange={(e) => {
@@ -91,14 +91,15 @@ export default function IdentityVerification() {
                   form.setValue("panNumber", value, { shouldValidate: true });
                 }}
                 placeholder="ABCDE1234F"
+                className="text-base md:text-sm"
               />
               {form.formState.errors.panNumber && (
-                <p className="mt-1 text-sm text-red-500">{form.formState.errors.panNumber.message}</p>
+                <p className="text-xs text-red-500 md:text-sm">{form.formState.errors.panNumber.message}</p>
               )}
             </div>
 
-            <div>
-              <Label>GST Number (optional for small sellers)</Label>
+            <div className="space-y-2">
+              <Label className="text-sm md:text-base">GST Number (optional for small sellers)</Label>
               <Input
                 {...form.register("gstNumber")}
                 onChange={(e) => {
@@ -106,21 +107,35 @@ export default function IdentityVerification() {
                   form.setValue("gstNumber", value, { shouldValidate: true });
                 }}
                 placeholder="22AAAAA0000A1Z5"
+                className="text-base md:text-sm"
               />
             </div>
 
-            <div>
-              <Label>Upload ID Proof (Aadhaar / Voter ID / Passport)</Label>
+            <div className="space-y-2">
+              <Label className="text-sm md:text-base">Upload ID Proof (Aadhaar / Voter ID / Passport)</Label>
               <Input
                 type="file"
                 accept="image/*,.pdf"
+                className="cursor-pointer text-sm md:text-base"
                 onChange={(e) => setIdDocument(e.target.files?.[0] ?? null)}
               />
+              {idDocument && (
+                <p className="text-xs text-green-600 md:text-sm">
+                  ✓ File selected: {idDocument.name}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 md:text-sm">
+                Max 5MB • Formats: PDF, JPG, PNG, WEBP
+              </p>
             </div>
 
-            {serverError && <p className="text-sm text-red-500">{serverError}</p>}
+            {serverError && (
+              <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700 md:text-sm">
+                ⚠ {serverError}
+              </div>
+            )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="h-11 w-full text-sm md:text-base" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save & Continue
             </Button>

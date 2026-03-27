@@ -7,8 +7,7 @@ import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { getNextAllowedStep } from "@/lib/onboarding-steps";
 import crypto from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 
 // ✅ Common Response Type
 type ActionResponse = {
@@ -519,26 +518,17 @@ export async function submitIdentityAction(formData: FormData): Promise<ActionRe
         return { success: false, message: "ID document must be smaller than 5MB" };
       }
 
-      const extFromName = path.extname(idDocumentEntry.name || "").toLowerCase();
-      const extByMime: Record<string, string> = {
-        "application/pdf": ".pdf",
-        "image/jpeg": ".jpg",
-        "image/png": ".png",
-        "image/webp": ".webp",
-      };
-      const extension = extFromName || extByMime[idDocumentEntry.type] || ".bin";
+        const extByMime: Record<string, string> = {
+          "application/pdf": ".pdf",
+          "image/jpeg": ".jpg",
+          "image/png": ".png",
+          "image/webp": ".webp",
+        };
+        const extension = extByMime[idDocumentEntry.type] || ".bin";
 
-      const fileName = `${profile.userId}-${Date.now()}${extension}`;
-      const relativePath = `/uploads/provider-identity/${fileName}`;
-      const absoluteDir = path.join(process.cwd(), "public", "uploads", "provider-identity");
-      const absoluteFilePath = path.join(absoluteDir, fileName);
-
-      await mkdir(absoluteDir, { recursive: true });
-
-      const fileBuffer = Buffer.from(await idDocumentEntry.arrayBuffer());
-      await writeFile(absoluteFilePath, fileBuffer);
-
-      savedIdDocument = relativePath;
+        const fileName = `provider-identity/${profile.userId}-${Date.now()}${extension}`;
+        const blob = await put(fileName, idDocumentEntry, { access: "private" });
+        savedIdDocument = blob.url;
     }
 
     await prisma.providerProfile.update({
@@ -690,9 +680,6 @@ const listingSchema = z.object({
 async function saveListingImages(providerProfileId: string, images: File[]): Promise<string[]> {
   const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
   const maxSizeBytes = 5 * 1024 * 1024;
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "provider-listings");
-
-  await mkdir(uploadDir, { recursive: true });
 
   return Promise.all(
     images.map(async (image, index) => {
@@ -704,20 +691,16 @@ async function saveListingImages(providerProfileId: string, images: File[]): Pro
         throw new Error("Each listing image must be smaller than 5MB");
       }
 
-      const extension =
-        path.extname(image.name || "").toLowerCase() ||
-        ({
+        const extByMime: Record<string, string> = {
           "image/jpeg": ".jpg",
           "image/png": ".png",
           "image/webp": ".webp",
-        } as const)[image.type] ||
-        ".bin";
-      const fileName = `${providerProfileId}-${Date.now()}-${index}${extension}`;
-      const filePath = path.join(uploadDir, fileName);
+        };
+        const extension = extByMime[image.type] || ".jpg";
+        const fileName = `provider-listings/${providerProfileId}-${Date.now()}-${index}${extension}`;
 
-      await writeFile(filePath, Buffer.from(await image.arrayBuffer()));
-
-      return `/uploads/provider-listings/${fileName}`;
+        const blob = await put(fileName, image, { access: "public" });
+        return blob.url;
     })
   );
 }

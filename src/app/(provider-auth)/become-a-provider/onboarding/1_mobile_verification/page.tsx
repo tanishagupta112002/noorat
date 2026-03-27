@@ -181,39 +181,40 @@ export default function MobileVerification() {
   }
 
   return (
-    <div className="flex justify-center">
-    <Card className="border-foreground w-full max-w-[600px] bg-white">
+    <div className="flex w-full justify-center px-0 sm:px-4">
+    <Card className="border-foreground w-full max-w-md bg-white sm:max-w-xl md:max-w-2xl">
       <CardHeader>
-        <CardTitle className="text-xl">Verify Your Mobile Number</CardTitle>
+        <CardTitle className="text-lg md:text-xl">Verify Your Mobile Number</CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 md:space-y-6">
         
 
         {step === "phone" ? (
           <form onSubmit={sendOtp} className="space-y-4">
-            <div>
-              <Label htmlFor="phone">Mobile Number</Label>
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-sm md:text-base">Mobile Number</Label>
               <Input
                 id="phone"
                 placeholder="+919876543210"
                 autoComplete="tel"
+                className="h-11 text-base"
                 {...phoneForm.register("phone")}
               />
               {phoneForm.formState.errors.phone && (
-                <p className="mt-1 text-sm text-red-500">{phoneForm.formState.errors.phone.message}</p>
+                <p className="text-xs text-red-500 md:text-sm">{phoneForm.formState.errors.phone.message}</p>
               )}
             </div>
 
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
+            {error && <p className="rounded-lg bg-red-50 p-2 text-xs text-red-700 md:text-sm">⚠ {error}</p>}
+            {successMessage && <p className="rounded-lg bg-green-50 p-2 text-xs text-green-700 md:text-sm">✓ {successMessage}</p>}
             {debugOtp && (
-              <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Dev OTP: <span className="font-semibold tracking-wider">{debugOtp}</span>
+              <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 md:text-sm">
+                <span className="block md:inline">Dev OTP:</span> <span className="font-semibold tracking-wider">{debugOtp}</span>
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={sendingOtp}>
+            <Button type="submit" className="h-11 w-full text-base" disabled={sendingOtp}>
               {sendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send OTP
             </Button>
@@ -221,13 +222,13 @@ export default function MobileVerification() {
         ) : (
           <form onSubmit={verifyOtp} className="space-y-4">
             <div className="space-y-2">
-              <Label>Enter OTP sent to {phone}</Label>
+              <Label className="text-sm md:text-base">Enter OTP sent to {phone}</Label>
               <InputOTP
                 maxLength={6}
                 value={otpForm.watch("otp")}
                 onChange={(value) => otpForm.setValue("otp", value, { shouldValidate: true })}
               >
-                <InputOTPGroup>
+                <InputOTPGroup className="gap-1 sm:gap-2">
                   <InputOTPSlot index={0} />
                   <InputOTPSlot index={1} />
                   <InputOTPSlot index={2} />
@@ -237,24 +238,24 @@ export default function MobileVerification() {
                 </InputOTPGroup>
               </InputOTP>
               {otpForm.formState.errors.otp && (
-                <p className="text-sm text-red-500">{otpForm.formState.errors.otp.message}</p>
+                <p className="text-xs text-red-500 md:text-sm">{otpForm.formState.errors.otp.message}</p>
               )}
             </div>
 
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
+            {error && <p className="rounded-lg bg-red-50 p-2 text-xs text-red-700 md:text-sm">⚠ {error}</p>}
+            {successMessage && <p className="rounded-lg bg-green-50 p-2 text-xs text-green-700 md:text-sm">✓ {successMessage}</p>}
             {debugOtp && (
-              <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Dev OTP: <span className="font-semibold tracking-wider">{debugOtp}</span>
+              <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 md:text-sm">
+                <span className="block md:inline">Dev OTP:</span> <span className="font-semibold tracking-wider">{debugOtp}</span>
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={verifyingOtp || otpForm.watch("otp").length !== 6}>
+            <Button type="submit" className="h-11 w-full text-base" disabled={verifyingOtp || otpForm.watch("otp").length !== 6}>
               {verifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Verify OTP
             </Button>
 
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between md:text-sm">
               <button
                 type="button"
                 onClick={() => {
@@ -262,7 +263,7 @@ export default function MobileVerification() {
                   setError(null);
                   setSuccessMessage(null);
                 }}
-                className="font-medium text-muted-foreground hover:text-foreground"
+                className="text-left text-xs font-medium text-muted-foreground hover:underline md:text-sm"
               >
                 Change number
               </button>
@@ -271,7 +272,7 @@ export default function MobileVerification() {
                 type="button"
                 onClick={resendOtp}
                 disabled={resendCooldown > 0 || sendingOtp}
-                className="font-medium text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                className="text-right text-xs font-medium text-primary disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"
               >
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
               </button>

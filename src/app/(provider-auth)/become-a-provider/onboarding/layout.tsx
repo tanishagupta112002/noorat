@@ -49,28 +49,28 @@ export default function OnboardingLayout({
   }, [nextAllowedPath, steps]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-full min-h-screen flex-col bg-gray-50 md:flex-row">
 
-      {/* Sidebar */}
-      <aside className="w-80 bg-background border-r  shrink-0">
-        <h2 className="text-xl bg-foreground p-6 text-background font-semibold mb-4">
+      {/* Sidebar - Hidden on mobile, visible on desktop */}
+      <aside className="hidden w-full bg-background md:block md:w-72 md:shrink-0 md:border-r">
+        <h2 className="bg-foreground p-4 text-sm font-semibold text-background md:p-6 md:text-base">
           Onboarding Progress
         </h2>
 
-        <ul className="space-y-4 p-4">
+        <ul className="space-y-2 p-4 md:space-y-4">
           {steps.map((step, i) => {
             const active = pathname === step.path;
             const completed = i < allowedIndex;
             const locked = i > allowedIndex;
             const circleText = completed || active ? "✓" : i + 1;
-            const itemClass = `flex items-center text-base gap-3 p-2 rounded transition-colors ${
+            const itemClass = `flex items-center gap-2 rounded p-2 text-sm transition-colors md:gap-3 md:text-base ${
               active
                 ? "bg-gray-100 font-medium"
                 : locked
                   ? "opacity-80 cursor-not-allowed"
                   : "hover:bg-gray-50"
             }`;
-            const badgeClass = `w-5 h-5 flex items-center justify-center rounded-full text-sm ${
+            const badgeClass = `flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold md:text-sm ${
               completed || active ? "bg-green-500 text-white" : "bg-gray-300"
             }`;
 
@@ -79,12 +79,12 @@ export default function OnboardingLayout({
                 {locked ? (
                   <div className={itemClass} aria-disabled="true">
                     <span className={badgeClass}>{circleText}</span>
-                    {step.name}
+                    <span className="truncate">{step.name}</span>
                   </div>
                 ) : (
                   <Link href={step.path} className={itemClass}>
                     <span className={badgeClass}>{circleText}</span>
-                    {step.name}
+                    <span className="truncate">{step.name}</span>
                   </Link>
                 )}
               </li>
@@ -94,9 +94,31 @@ export default function OnboardingLayout({
       </aside>
 
       {/* Main Content */}
-      
-      <main className="flex-1 p-10">
-        <Logo className="flex justify-center mb-8" />
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
+        <Logo className="mb-6 flex justify-center md:mb-8" />
+
+        {/* Mobile Step Indicator */}
+        <div className="mb-4 flex items-center justify-center gap-1 md:hidden">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 flex-1 rounded-full transition-colors ${
+                i < allowedIndex ? "bg-green-500" : i === allowedIndex ? "bg-blue-500" : "bg-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Mobile Current Step Title */}
+        <div className="mb-6 md:hidden">
+          <div className="text-center text-xs font-semibold text-gray-600">
+            Step {allowedIndex + 1} of {steps.length}
+          </div>
+          <h2 className="text-center text-base font-bold text-gray-800">
+            {steps[allowedIndex]?.name}
+          </h2>
+        </div>
+
         {children}
       </main>
 
