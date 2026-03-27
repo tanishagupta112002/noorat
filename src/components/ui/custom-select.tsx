@@ -40,6 +40,8 @@ type CustomSelectProps = {
   onValueChange?: (value: string) => void;
 };
 
+const EMPTY_SENTINEL = "__custom_select_empty__";
+
 function isEmptyValue(value: string | undefined) {
   return value === undefined || value === "";
 };
@@ -67,6 +69,7 @@ export const CustomSelect = forwardRef<HTMLSelectElement, CustomSelectProps>(
     const [internalValue, setInternalValue] = useState(defaultValue ?? "");
 
     const selectedValue = value ?? internalValue;
+    const selectValue = isEmptyValue(selectedValue) ? EMPTY_SENTINEL : selectedValue;
 
     useEffect(() => {
       if (value !== undefined) {
@@ -85,6 +88,10 @@ export const CustomSelect = forwardRef<HTMLSelectElement, CustomSelectProps>(
     );
 
     function handleValueChange(nextValue: string) {
+      if (nextValue === EMPTY_SENTINEL) {
+        return;
+      }
+
       if (value === undefined) {
         setInternalValue(nextValue);
       }
@@ -104,7 +111,7 @@ export const CustomSelect = forwardRef<HTMLSelectElement, CustomSelectProps>(
       <div className={`space-y-2 ${containerClassName}`}>
         {label && <Label>{label}</Label>}
         <Select
-          value={isEmptyValue(selectedValue) ? undefined : selectedValue}
+          value={selectValue}
           onValueChange={handleValueChange}
           disabled={disabled}
           {...props}
@@ -120,6 +127,9 @@ export const CustomSelect = forwardRef<HTMLSelectElement, CustomSelectProps>(
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent side="bottom" position="popper" avoidCollisions={false} className="max-h-52 overflow-y-auto">
+            <SelectItem value={EMPTY_SENTINEL} disabled className="hidden">
+              {placeholder}
+            </SelectItem>
             {selectableOptions.map((option) => (
               <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
                 {option.label}

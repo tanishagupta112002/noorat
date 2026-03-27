@@ -794,6 +794,10 @@ export async function completeFirstListingAction(formData: FormData): Promise<Ac
       return { success: false, message: err.issues[0]?.message || "Invalid listing details" };
     }
 
+    if (err instanceof Error) {
+      return { success: false, message: err.message };
+    }
+
     return { success: false, message: "Failed to complete onboarding" };
   }
 }
