@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  password      String?
+
+  role          Role      @default(CUSTOMER)
+
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  pincode       String?
+  alternative_mobile_number String?
+  dob           DateTime?
+
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Auth
+  accounts      Account[]
+  sessions      Session[]
+
+  // Profiles
+  providerProfile ProviderProfile?
+
+  // Orders
+  customerOrders Order[] @relation("CustomerOrders")
+  
+  // Wishlist
+  wishlists     Wishlist[]
+
+  // Cart
+  cartItems     CartItem[]
+
+  @@map("user")
+}
+
+enum Role {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+model ProviderProfile {
+  id           String   @id @default(uuid())
+
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  providerType ProviderType?
+  businessName String?
+  phone        String
+  alternate_phone String?
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
+  description  String?
+  profilePhoto String?
+  bankAccountNumber String? 
+  bankIfsc          String? 
+  bankAccountName   String? 
+  panNumber    String?  
+  idDocument   String?  
+  signature    String?  
+
+  stepMobileVerified   Boolean @default(false) // Step 1
+  stepIdentityVerified Boolean @default(false) // Step 2
+  stepStoreDetails     Boolean @default(false) // Step 3
+  stepPickupAddress    Boolean @default(false) // Step 4
+  stepBankDetails      Boolean @default(false) // Step 5
+  stepFirstListing     Boolean @default(false) // Step 6
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Provider-owned commerce entities
+  listings     Listing[] @relation("ProviderListings")
+  providerOrders Order[] @relation("ProviderOrders")
+}
+
+enum ProviderType {
+  BOUTIQUE
+  RENTAL
+}
+
+model Listing {
+  id          String   @id @default(uuid())
+
+  providerId  String
+  provider    ProviderProfile @relation("ProviderListings", fields: [providerId], references: [id], onDelete: Cascade)
+
+  title       String
+  Fabric      String
+  size        String   @default("Free Size")
+  
+  images      String[]
+  description String?
+  originalPrice Float    @default(0)
+  price       Float
+  category    String
+  color       String   @default("Assorted")
+
+  status      Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reviews     ListingReview[]
+  orders      Order[]  @relation("ListingOrders")
+  wishlists   Wishlist[]
+  cartItems   CartItem[]
+}
+
+model ListingReview {
+  id            String   @id @default(uuid())
+  listingId     String
+  listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  reviewerName  String
+  reviewerEmail String?
+  rating        Int
+  title         String?
+  comment       String
+  imageUrl      String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([listingId])
+}
+
+model Order {
+  id          String   @id @default(uuid())
+
+  listingId   String
+  listing     Listing  @relation("ListingOrders", fields: [listingId], references: [id], onDelete: Cascade)
+
+  userId      String
+  user        User     @relation("CustomerOrders", fields: [userId], references: [id])
+
+  providerId  String
+  provider    ProviderProfile @relation("ProviderOrders", fields: [providerId], references: [id])
+
+  quantity    Int      @default(1)
+  total       Float
+
+  status      OrderStatus @default(PENDING)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+model Account {
+  id                    String   @id @default(uuid())
+  userId                String
+  
+  accountId  String
+  providerId String
+
+  accessToken          String?  @db.Text
+  refreshToken         String?  @db.Text
+  idToken              String?  @db.Text
+
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+
+  scope                 String?   
+ 
+  password              String?    
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([accountId, providerId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  token        String   @unique
+  userId       String
+
+  expiresAt    DateTime
+
+  ipAddress    String?
+  userAgent    String?
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  listingId String
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, listingId])
+  @@index([userId])
+  @@index([listingId])
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  listingId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([userId])
+  @@index([listingId])
+}

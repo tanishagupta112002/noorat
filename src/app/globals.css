@@ -52,7 +52,8 @@
 :root {
   --radius: 0.625rem;
 
-  --background: oklch(92% 0.025 7);          /* your soft pink base oklch(84.727% 0.04993 7.099) */
+  /*--background: oklch(92% 0.025 7);          /* your soft pink base oklch(84.727% 0.04993 7.099) */
+  --background: #ebc0c7;          /* your soft pink base */
   --foreground: oklch(40.318% 0.07675 18.731);         /* your deep warm text */
 
   /* Card / Popover: slightly lighter variant of background for depth */

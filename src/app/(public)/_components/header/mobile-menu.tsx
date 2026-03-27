@@ -1,239 +1,137 @@
-// src/components/layout/mobile-menu.tsx
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Menu, X, ChevronDown } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-
-import {
-  homeDropdown,
-  rentalsDropdown,
-  customDropdown,
-  exploreDropdown,
-} from "./nav-config";
-
-export function MobileMenu() {
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  const isActive = (href: string) =>
-    window.location.pathname === href ||
-    window.location.pathname.startsWith(href + "/") ||
-    window.location.pathname.startsWith(href);
+import Link from "next/link"
+import { useState } from "react"
+import { Menu, ChevronDown, type LucideIcon } from "lucide-react"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { NAV_ITEMS, type NavChild, type NavItem } from "./nav-config"
+import Image from "next/image"
+import link from "next/link"
+export default function MobileMenu() {
+  const [open, setOpen] = useState(false)
 
   return (
-    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-      <SheetTrigger asChild className="md:hidden">
-        <Button variant="ghost" size="icon" aria-label="Open navigation menu">
-          <Menu className="h-6 w-6 stroke-[1.5px]" />
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button size="icon" variant="ghost">
+          <Menu />
         </Button>
       </SheetTrigger>
 
       <SheetContent
         side="left"
-        className="w-[85vw] max-w-sm p-0 border-r bg-background [&>button]:hidden"
+        className="w-[85vw] z-9999 max-w-60 p-0 bg-background flex flex-col"
       >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b px-6 py-5">
-            <Link href="/" className="flex items-center gap-2.5" onClick={() => setSheetOpen(false)}>
-              <Image
-                src="/images/logo.png"
-                alt="TaniTwirl Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-              <span className="text-2xl font-bold tracking-tight text-foreground">
-                TaniTwirl
-              </span>
-            </Link>
+        {/* HEADER */}
+        <div className="border-b px-5 pt-5 -pb-5">
+          <Link href="/" className="group inline-flex shrink-0">
+                <div className="inline-flex shrink-0 items-center gap-0 whitespace-nowrap">
+                  <Image
+                    src="/images/logo.png"
+                    alt="Noorat Logo"
+                    width={160}
+                    height={60}
+                    className="block shrink-0 object-cover -mb-2 h-10  w-auto"
+                  />
+                  
+                </div>
+              </Link>     
+        </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSheetOpen(false)}
-              aria-label="Close menu"
-            >
-              <X className="h-6 w-6 stroke-[1.5px]" />
-            </Button>
-          </div>
+        {/* MENU */}
+        <div className="flex-1 overflow-y-auto">
+          {NAV_ITEMS.map((item: NavItem) => (
+            <MobileCollapsible
+              key={item.label}
+              label={item.label}
+              icon={item.icon}
+              childrenItems={item.children || []}
+              onClose={() => setOpen(false)}
+            />
+          ))}
+        </div>
 
-          <nav className="flex-1 overflow-y-auto px-6 py-8">
-            {/* Home collapsible */}
-            <div className="mb-6">
-              {(() => {
-                const [isOpen, setIsOpen] = useState(false);
-                return (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
-                    >
-                      Home
-                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
-                    </button>
+        
 
-                    {isOpen && (
-                      <div className="mt-2 space-y-1 pl-4">
-                        {homeDropdown.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                              "flex items-center justify-between py-3 px-4 rounded-lg text-sm transition-colors hover:bg-accent/70",
-                              isActive(item.href) && "bg-accent/50 font-medium text-foreground"
-                            )}
-                            onClick={() => setSheetOpen(false)}
-                          >
-                            {item.label}
-                            {item.badge && <Badge variant="secondary" className="text-xs">{item.badge}</Badge>}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
+        {/* AUTH */}
+        <div className="border-t px-5 py-5 space-y-3">
+          <Button variant="outline" className="w-full" asChild>
+            <Link href="/sign-in">Sign In</Link>
+          </Button>
 
-            {/* Rentals collapsible */}
-            <div className="mb-6">
-              {(() => {
-                const [isOpen, setIsOpen] = useState(false);
-                return (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
-                    >
-                      Rentals
-                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
-                    </button>
-
-                    {isOpen && (
-                      <div className="mt-3 space-y-6 pl-2">
-                        {rentalsDropdown.map((group) => (
-                          <div key={group.category}>
-                            <p className="mb-2 px-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                              {group.category}
-                            </p>
-                            <div className="space-y-1">
-                              {group.items.map((item) => (
-                                <Link
-                                  key={item.href}
-                                  href={item.href}
-                                  className={cn(
-                                    "block py-3 px-5 rounded-lg text-sm text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground",
-                                    isActive(item.href) && "bg-accent/50 text-foreground font-medium"
-                                  )}
-                                  onClick={() => setSheetOpen(false)}
-                                >
-                                  {item.label}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-
-            {/* Custom collapsible */}
-            <div className="mb-6">
-              {(() => {
-                const [isOpen, setIsOpen] = useState(false);
-                return (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
-                    >
-                      Custom
-                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
-                    </button>
-
-                    {isOpen && (
-                      <div className="mt-2 space-y-1 pl-4">
-                        {customDropdown.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                              "flex items-center justify-between py-3 px-4 rounded-lg text-sm transition-colors hover:bg-accent/70",
-                              isActive(item.href) && "bg-accent/50 font-medium text-foreground"
-                            )}
-                            onClick={() => setSheetOpen(false)}
-                          >
-                            {item.label}
-                            {item.badge && <Badge variant="secondary" className="text-xs">{item.badge}</Badge>}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-
-            {/* Explore collapsible */}
-            <div className="mb-6">
-              {(() => {
-                const [isOpen, setIsOpen] = useState(false);
-                return (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setIsOpen(!isOpen)}
-                      className="flex w-full items-center justify-between py-4 px-4 text-base font-semibold text-foreground hover:bg-accent/50 rounded-lg transition-colors uppercase tracking-wide"
-                    >
-                      Explore
-                      <ChevronDown className={cn("h-5 w-5 stroke-[1.5px] transition-transform", isOpen && "rotate-180")} />
-                    </button>
-
-                    {isOpen && (
-                      <div className="mt-2 space-y-1 pl-4">
-                        {exploreDropdown.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                              "block py-3 px-4 rounded-lg text-sm text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground",
-                              isActive(item.href) && "bg-accent/50 text-foreground font-medium"
-                            )}
-                            onClick={() => setSheetOpen(false)}
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          </nav>
-
-          <div className="border-t px-6 py-8 mt-auto space-y-4 bg-muted/30">
-            <Button variant="outline" className="w-full justify-center" asChild onClick={() => setSheetOpen(false)}>
-              <Link href="/sign-in">Sign In</Link>
-            </Button>
-            <Button className="w-full justify-center" asChild onClick={() => setSheetOpen(false)}>
-              <Link href="/sign-up">Create Free Account</Link>
-            </Button>
-          </div>
+          <Button className="w-full" asChild>
+            <Link href="/sign-up">Create Account</Link>
+          </Button>
         </div>
       </SheetContent>
     </Sheet>
-  );
+  )
+}
+
+function MobileCollapsible({
+  label,
+  icon: Icon,
+  childrenItems,
+  onClose,
+}: {
+  label: string
+  icon?: LucideIcon
+  childrenItems: NavChild[]
+  onClose: () => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="px-1">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-start justify-between px-3 py-4 rounded-lg hover:bg-muted"
+      >
+        <div className="flex items-center gap-3">
+          {Icon && <Icon className="h-5 w-5 shrink-0 mt-0.5" />}
+          <span className="font-medium">{label}</span>
+        </div>
+
+        {childrenItems.length > 0 && (
+          <ChevronDown
+            className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`}
+          />
+        )}
+      </button>
+
+      {open && childrenItems.length > 0 && (
+        <div className="pl-8 pb-3 space-y-1">
+          {childrenItems.map((child) => {
+            if (child.children) {
+              return (
+                <MobileCollapsible
+                  key={child.label}
+                  label={child.label}
+                  childrenItems={child.children}
+                  onClose={onClose}
+                />
+              )
+            }
+
+            return (
+              <Link
+                key={child.href}
+                href={child.href}
+                onClick={onClose}
+                className="flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                {child.label}
+
+                {child.badge && (
+                  <Badge variant="secondary">{child.badge}</Badge>
+                )}
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
 }
