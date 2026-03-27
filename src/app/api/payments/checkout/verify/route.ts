@@ -107,7 +107,15 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: cart.error }, { status: 400 });
     }
 
-    if (payment.amount < cart.amountInPaise) {
+    const paidAmount = Number(payment.amount);
+    if (!Number.isFinite(paidAmount)) {
+      return Response.json(
+        { success: false, error: "Unable to read paid amount" },
+        { status: 400 }
+      );
+    }
+
+    if (paidAmount < cart.amountInPaise) {
       return Response.json(
         { success: false, error: "Paid amount is less than checkout total" },
         { status: 400 }

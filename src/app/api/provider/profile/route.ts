@@ -204,7 +204,7 @@ async function sendSmsOtp(phone: string, otp: string): Promise<{ success: boolea
 	const authHeader = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 	const params = new URLSearchParams({
 		To: phone,
-		Body: `Your Tanitwirl OTP is ${otp}. It is valid for ${OTP_EXPIRY_MINUTES} minutes.`,
+		Body: `Your noorat OTP is ${otp}. It is valid for ${OTP_EXPIRY_MINUTES} minutes.`,
 	});
 
 	if (messagingServiceSid) {

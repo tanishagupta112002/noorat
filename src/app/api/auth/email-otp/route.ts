@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       await resend.emails.send({
         from: "onboarding@resend.dev",
         to: email,
-        subject: "Your Tanitwirl OTP Code",
+        subject: "Your noorat OTP Code",
         html: `<p>Your OTP is <strong>${generatedOtp}</strong>. Expires in 10 minutes.</p>`,
       });
 

@@ -95,7 +95,7 @@ function averageRating(reviews: Array<{ rating: number }>) {
 }
 
 function toPublicRental(listing: ListingRow): PublicRental {
-	const providerName = listing.provider.businessName?.trim() || "TaniTwirl Partner";
+	const providerName = listing.provider.businessName?.trim() || "noorat Partner";
 	const fabric = listing.Fabric?.trim() || "Not specified";
 	const description = listing.description?.trim() || "";
 

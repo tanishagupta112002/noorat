@@ -107,12 +107,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const config = resolveSubpageConfig(slug);
 
   if (!config) {
-    return { title: "Category Not Found | TaniTwirl" };
+    return { title: "Category Not Found | noorat" };
   }
 
   return {
-    title: `${config.categoryLabel} Rentals | TaniTwirl`,
-    description: `Browse ${config.categoryLabel.toLowerCase()} on TaniTwirl rentals with the same filters and listing layout as the main rentals page.`,
+    title: `${config.categoryLabel} Rentals | noorat`,
+    description: `Browse ${config.categoryLabel.toLowerCase()} on noorat rentals with the same filters and listing layout as the main rentals page.`,
   };
 }
 

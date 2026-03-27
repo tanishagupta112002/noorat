@@ -35,13 +35,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const listings = await getRentalsByProviderSlug(id);
 
   if (listings.length === 0) {
-    return { title: "Designer Studio Profile | TaniTwirl" };
+    return { title: "Designer Studio Profile | noorat" };
   }
 
   const provider = listings[0]!;
 
   return {
-    title: `${provider.providerName} Studio | TaniTwirl`,
+    title: `${provider.providerName} Studio | noorat`,
     description: `Browse all rental outfits by ${provider.providerName} in ${provider.city}.`,
   };
 }

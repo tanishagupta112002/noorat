@@ -19,14 +19,14 @@ import {
 } from "@/components/ui/accordion";
 
 export const metadata: Metadata = {
-  title: "Become a Provider on TaniTwirl | TaniTwirl",
+  title: "Become a Provider on noorat | noorat",
   description:
-    "Learn why boutiques and rental shops should list on TaniTwirl, how the provider flow works and what the onboarding path looks like.",
+    "Learn why boutiques and rental shops should list on noorat, how the provider flow works and what the onboarding path looks like.",
 };
 
 const providerFaqs = [
   {
-    question: "Who should become a provider on TaniTwirl?",
+    question: "Who should become a provider on noorat?",
     answer:
       "Boutique designers, lehenga and saree rental shops, occasionwear studios and local businesses that want customer discovery, orders and repeat demand through one platform.",
   },
@@ -41,7 +41,7 @@ const providerFaqs = [
       "Have your mobile number, identity documents, store details, pickup address and bank details ready. The onboarding flow then takes you into your first listing.",
   },
   {
-    question: "Can I use TaniTwirl for custom orders too?",
+    question: "Can I use noorat for custom orders too?",
     answer:
       "Yes. Boutique-led providers can benefit from customers coming through both category discovery and AI custom request routes.",
   },
@@ -109,7 +109,7 @@ export default function ProviderInfoPage() {
           <div className="max-w-2xl space-y-2">
             <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">Why become a provider?</h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              TaniTwirl gives customers clear public routes. Providers benefit because those routes are already organized around how customers actually decide.
+              noorat gives customers clear public routes. Providers benefit because those routes are already organized around how customers actually decide.
             </p>
           </div>
 
@@ -206,7 +206,7 @@ export default function ProviderInfoPage() {
           <Card className="rounded-[2rem] border-border/70 bg-linear-to-r from-orange-100/70 via-white/90 to-rose-100/80 shadow-sm">
             <CardContent className="grid gap-6 p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div className="space-y-4">
-                <h3 className="text-2xl font-semibold">Use TaniTwirl as a clearer intake funnel</h3>
+                <h3 className="text-2xl font-semibold">Use noorat as a clearer intake funnel</h3>
                 <p className="text-sm leading-6 text-muted-foreground sm:text-base">
                   Customers can arrive with inspiration, event details and category intent already established. That makes it easier to quote, accept or adapt custom requests without repeating the same discovery conversation from scratch.
                 </p>

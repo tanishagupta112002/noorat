@@ -5,7 +5,7 @@ import type { PublicPageContent } from "@/types";
 export const content: PublicPageContent = {
   theme: "sage",
   eyebrow: "Explore",
-  title: "How TaniTwirl Works for Customers From Search to Return",
+  title: "How noorat Works for Customers From Search to Return",
   description:
     "This route explains the core customer journey so first-time renters know what to expect before choosing a provider, confirming fit and finalizing pickup or delivery.",
   badges: ["Customer guide", "Built from navbar"],

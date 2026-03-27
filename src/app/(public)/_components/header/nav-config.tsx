@@ -184,7 +184,7 @@ export const NAV_ITEMS: NavItem[] = [
         href: "/sustainability",
         description: "Renting is the new owning – save money, space & the planet",
       },
-      { label: "How TaniTwirl Works", href: "/how-it-works" },
+      { label: "How noorat Works", href: "/how-it-works" },
       { label: "Size Guide", href: "/size-guide" },
       { label: "FAQs", href: "/faq" },
       { label: "Contact Us", href: "/contact" },
@@ -198,12 +198,12 @@ export const NAV_ITEMS: NavItem[] = [
     {
       label: "Why Become a Provider?",
       href: "/provider-info#benefits",
-      description: "Earn by listing your boutique designs or rental outfits on Tanitwirl",
+      description: "Earn by listing your boutique designs or rental outfits on noorat",
     },
     {
       label: "How It Works",
       href: "/provider-info#how-it-works",
-      description: "Simple steps to start earning with Tanitwirl",
+      description: "Simple steps to start earning with noorat",
     },
     {
       label: "For Boutique Designers",

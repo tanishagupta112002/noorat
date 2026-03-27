@@ -1,6 +1,9 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { z } from "zod";
@@ -36,7 +39,7 @@ const otpSchema = z.object({
 type InitialFormData = z.infer<typeof initialSchema>;
 type OtpFormData = z.infer<typeof otpSchema>;
 
-export default function AuthPage() {
+function AuthPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -215,7 +218,7 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/50 to-transparent" />
 
         <div className="absolute bottom-20 left-12 text-white">
-          <h2 className="text-5xl font-serif">Welcome to Tanitwirl</h2>
+          <h2 className="text-5xl font-serif">Welcome to noorat</h2>
 
           <p className="mt-3 text-lg opacity-90">
             Discover, rent & share fashion effortlessly.
@@ -245,7 +248,7 @@ export default function AuthPage() {
 
             <p className="text-sm text-muted-foreground mt-2">
               {mode === "signup"
-                ? "Join Tanitwirl and start your style journey"
+                ? "Join noorat and start your style journey"
                 : "Welcome back"}
             </p>
           </div>
@@ -385,5 +388,13 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthPageContent />
+    </Suspense>
   );
 }

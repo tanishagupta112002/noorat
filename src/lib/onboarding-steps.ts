@@ -1,18 +1,18 @@
 // src/lib/onboarding-steps.ts
-import type { ProviderProfile } from "@prisma/client";
+
+type OnboardingStepFlags = {
+  stepMobileVerified: boolean;
+  stepIdentityVerified: boolean;
+  stepStoreDetails: boolean;
+  stepPickupAddress: boolean;
+  stepBankDetails: boolean;
+  stepFirstListing: boolean;
+};
 
 const ONBOARDING_BASE_PATH = "/become-a-provider/onboarding";
 
 export function getNextAllowedStep(
-  profile: Pick<
-    ProviderProfile,
-    | "stepMobileVerified"
-    | "stepIdentityVerified"
-    | "stepStoreDetails"
-    | "stepPickupAddress"
-    | "stepBankDetails"
-    | "stepFirstListing"
-  > | null
+  profile: OnboardingStepFlags | null
 ): string {
   if (!profile?.stepMobileVerified) {
     return `${ONBOARDING_BASE_PATH}/1_mobile_verification`;

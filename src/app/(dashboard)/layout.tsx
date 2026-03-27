@@ -53,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return groups;
   }, {});
 
-  const userName = session?.user?.name?.trim() || "TaniTwirl User";
+  const userName = session?.user?.name?.trim() || "noorat User";
   const userInitial = userName.charAt(0).toUpperCase();
   const userEmail = session?.user?.email ?? "";
 

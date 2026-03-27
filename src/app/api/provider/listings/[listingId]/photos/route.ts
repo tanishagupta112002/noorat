@@ -127,7 +127,7 @@ export async function DELETE(
 			return Response.json({ success: false, error: "Image URL is required" }, { status: 400 });
 		}
 
-		const updatedImages = listing.images.filter((img) => img !== imageUrl);
+		const updatedImages = listing.images.filter((img: string) => img !== imageUrl);
 
 		if (updatedImages.length === listing.images.length) {
 			return Response.json({ success: false, error: "Image not found in listing" }, { status: 404 });

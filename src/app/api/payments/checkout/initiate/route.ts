@@ -89,7 +89,7 @@ export async function POST(req: Request) {
         orderId: razorpayOrder.id,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
-        name: "TaniTwirl",
+        name: "noorat",
         description: "Rental order payment",
         prefill: {
           name: session.user.name || "",

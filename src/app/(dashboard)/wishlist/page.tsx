@@ -68,7 +68,7 @@ export default async function WishlistPage() {
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {wishlistItems.map((item) => {
+          {wishlistItems.map((item: (typeof wishlistItems)[number]) => {
             const listing = item.listing;
             const primaryImage = listing.images[0] || "/images/image.png";
             const hasDiscount = listing.originalPrice > listing.price;
@@ -90,7 +90,7 @@ export default async function WishlistPage() {
                 </Link>
 
                 <div className="space-y-3 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">{listing.provider.businessName || "TaniTwirl Partner"}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">{listing.provider.businessName || "noorat Partner"}</p>
                   <Link href={`/rentals/item/${listing.id}`} className="line-clamp-2 text-sm font-semibold text-foreground transition hover:text-primary">
                     {listing.title}
                   </Link>

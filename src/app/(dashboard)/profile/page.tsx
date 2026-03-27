@@ -1,4 +1,4 @@
-// C:\Users\Tanisha Gupta\OneDrive\Desktop\tanitwirl\src\app\(dashboard)\profile\page.tsx
+// C:\Users\Tanisha Gupta\OneDrive\Desktop\noorat\src\app\(dashboard)\profile\page.tsx
 "use client";
 
 import { useSession } from "@/hooks/user-session";

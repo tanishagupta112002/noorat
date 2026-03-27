@@ -11,7 +11,7 @@ import { customRequestPages } from "../content";
 const content = customRequestPages["how-it-works"];
 
 export const metadata: Metadata = {
-  title: `${content.title} | TaniTwirl`,
+  title: `${content.title} | noorat`,
   description: content.description,
 };
 

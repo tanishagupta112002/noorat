@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRentals } from "@/app/(public)/rentals/_services/getRentals";
 
 export const metadata: Metadata = {
-  title: "Designer Studios | TaniTwirl",
+  title: "Designer Studios | noorat",
   description: "View all designer studios and open individual provider profiles.",
 };
 
@@ -73,7 +73,7 @@ export default async function DesignerStudiosPage() {
               View All Designer Studios
             </h1>
             <p className="text-base leading-7 text-muted-foreground">
-              Browse every studio on TaniTwirl and open individual provider profiles for full listings.
+              Browse every studio on noorat and open individual provider profiles for full listings.
             </p>
           </div>
 

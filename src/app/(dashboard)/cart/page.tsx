@@ -139,7 +139,7 @@ export default async function CartPage() {
                     <div className="space-y-3 self-center">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                          {listing.provider.businessName || "TaniTwirl Partner"}
+                          {listing.provider.businessName || "noorat Partner"}
                         </p>
                         <Link 
                           href={`/rentals/item/${listing.id}`} 

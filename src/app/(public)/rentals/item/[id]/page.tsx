@@ -51,11 +51,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const rental = await getRentalById(id);
 
   if (!rental) {
-    return { title: "Rental Details | TaniTwirl" };
+    return { title: "Rental Details | noorat" };
   }
 
   return {
-    title: `${rental.title} | TaniTwirl`,
+    title: `${rental.title} | noorat`,
     description: rental.description || `${rental.category} rental by ${rental.providerName} in ${rental.city}.`,
   };
 }

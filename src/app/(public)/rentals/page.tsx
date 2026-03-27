@@ -15,9 +15,9 @@ import { getRentals } from "./_services/getRentals";
 import { RentalProductCard } from "./_components/RentalProductCard";
 
 export const metadata: Metadata = {
-  title: "Browse Rentals | TaniTwirl",
+  title: "Browse Rentals | noorat",
   description:
-    "Browse rental listings with responsive filters and category navigation from TaniTwirl.",
+    "Browse rental listings with responsive filters and category navigation from noorat.",
 };
 
 const sortOptions = ["Recommended", "What's New", "Popularity", "Price: Low to High", "Price: High to Low"];
@@ -521,7 +521,7 @@ export default async function RentalsPage({ searchParams }: PageProps) {
 
   const boutiqueMap = new Map<string, number>();
   for (const rental of sectionScopedRentals) {
-    const key = rental.providerName || "TaniTwirl Partner";
+    const key = rental.providerName || "noorat Partner";
     boutiqueMap.set(key, (boutiqueMap.get(key) ?? 0) + 1);
   }
 

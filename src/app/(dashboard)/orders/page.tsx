@@ -70,7 +70,7 @@ export default async function OrdersPage() {
         </div>
       ) : (
         <div className="mt-8 space-y-4">
-          {orders.map((order) => {
+          {orders.map((order: (typeof orders)[number]) => {
             const primaryImage = order.listing.images[0] || "/images/image.png";
 
             return (
@@ -83,7 +83,7 @@ export default async function OrdersPage() {
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-                        {order.provider.businessName || "TaniTwirl Partner"}
+                        {order.provider.businessName || "noorat Partner"}
                       </p>
                       <span className="rounded-full bg-[#f5f5f5] px-3 py-1 text-xs font-semibold text-foreground">{order.status}</span>
                     </div>

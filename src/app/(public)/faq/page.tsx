@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { content } from "./content";
 
 export const metadata: Metadata = {
-  title: `${content.title} | TaniTwirl`,
+  title: `${content.title} | noorat`,
   description: content.description,
 };
 

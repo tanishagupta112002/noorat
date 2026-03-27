@@ -143,7 +143,7 @@ async function sendSmsOtp(phone: string, otp: string): Promise<ActionResponse> {
 
   const params = new URLSearchParams({
     To: phone,
-    Body: `Your Tanitwirl OTP is ${otp}. It is valid for ${OTP_EXPIRY_MINUTES} minutes.`,
+    Body: `Your noorat OTP is ${otp}. It is valid for ${OTP_EXPIRY_MINUTES} minutes.`,
   });
 
   if (messagingServiceSid) {
@@ -754,7 +754,7 @@ export async function completeFirstListingAction(formData: FormData): Promise<Ac
 
     const imagePaths = await saveListingImages(profile.id, imageEntries);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       await tx.listing.create({
         data: {
           providerId: profile.id,
