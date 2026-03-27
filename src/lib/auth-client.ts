@@ -16,10 +16,15 @@ import { emailOTPClient } from "better-auth/client/plugins";
 import { inferAdditionalFields } from "better-auth/client/plugins"; // ← important!
 import { auth } from "./auth";
 
-const clientBaseUrl =
+const envClientBaseUrl =
   (typeof process.env.NEXT_PUBLIC_APP_URL === "string"
     ? process.env.NEXT_PUBLIC_APP_URL.trim()
     : "") || "http://localhost:3000";
+
+const clientBaseUrl =
+  typeof window !== "undefined" && process.env.NODE_ENV !== "production"
+    ? window.location.origin
+    : envClientBaseUrl;
 
 export const authClient = createAuthClient({
   baseURL: clientBaseUrl,

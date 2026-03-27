@@ -58,7 +58,8 @@ function env(name: string): string | undefined {
 const authBaseUrl =
   env("BETTER_AUTH_URL") || env("NEXT_PUBLIC_APP_URL") || "http://localhost:3000";
 
-const normalizedAuthBaseUrl = authBaseUrl.replace(/\/$/, "");
+const normalizedAuthBaseUrl =
+  (process.env.NODE_ENV === "production" ? authBaseUrl : "http://localhost:3000").replace(/\/$/, "");
 
 const trustedOrigins = Array.from(
   new Set(
