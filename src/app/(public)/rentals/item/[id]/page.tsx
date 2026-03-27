@@ -41,6 +41,8 @@ type PageProps = {
 
 const placeholderImage = "/images/image.png";
 
+export const dynamic = "force-dynamic";
+
 export async function generateStaticParams() {
   const rentals = await getRentals();
   return rentals.map((rental) => ({ id: rental.id }));

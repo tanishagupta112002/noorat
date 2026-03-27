@@ -60,10 +60,23 @@ const authBaseUrl =
 
 const normalizedAuthBaseUrl = authBaseUrl.replace(/\/$/, "");
 
+const trustedOrigins = Array.from(
+  new Set(
+    [
+      normalizedAuthBaseUrl,
+      env("NEXT_PUBLIC_APP_URL"),
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0)
+  )
+);
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+
+  trustedOrigins,
 
   emailAndPassword: {
     enabled: true,

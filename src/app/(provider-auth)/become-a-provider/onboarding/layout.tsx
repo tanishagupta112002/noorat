@@ -38,7 +38,7 @@ export default function OnboardingLayout({
     return () => {
       active = false;
     };
-  }, []);
+  }, [pathname]);
 
   const allowedIndex = useMemo(() => {
     if (nextAllowedPath === "/provider/dashboard") {

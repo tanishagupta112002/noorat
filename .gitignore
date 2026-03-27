@@ -92,3 +92,4 @@ next-env.d.ts
 uploads/
 media/
 .vercel
+.env*.local
