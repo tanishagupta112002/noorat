@@ -50,8 +50,13 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './prisma';
 import type { User, Session } from "better-auth";  // ← Import these!
 
+function env(name: string): string | undefined {
+  const value = process.env[name];
+  return typeof value === "string" ? value.trim() : undefined;
+}
+
 const authBaseUrl =
-  process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  env("BETTER_AUTH_URL") || env("NEXT_PUBLIC_APP_URL") || "http://localhost:3000";
 
 const normalizedAuthBaseUrl = authBaseUrl.replace(/\/$/, "");
 
@@ -67,8 +72,8 @@ export const auth = betterAuth({
 
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: env("GOOGLE_CLIENT_ID")!,
+      clientSecret: env("GOOGLE_CLIENT_SECRET")!,
       redirectURI: `${normalizedAuthBaseUrl}/api/auth/callback/google`,
     },
   },
