@@ -1,10 +1,25 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
-
 import { prisma } from "@/lib/prisma";
+import { put } from "@vercel/blob";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+function getBlobTokenOrThrow(): string {
+  const token =
+    (typeof process.env.BLOB_READ_WRITE_TOKEN === "string" &&
+      process.env.BLOB_READ_WRITE_TOKEN.trim()) ||
+    (typeof process.env.VERCEL_BLOB_READ_WRITE_TOKEN === "string" &&
+      process.env.VERCEL_BLOB_READ_WRITE_TOKEN.trim()) ||
+    "";
+
+  if (!token) {
+    throw new Error(
+      "Vercel Blob token is missing. Set BLOB_READ_WRITE_TOKEN (or VERCEL_BLOB_READ_WRITE_TOKEN)."
+    );
+  }
+
+  return token;
+}
 
 function sanitizeName(value: string) {
   return value.trim().replace(/\s+/g, " ");
@@ -19,23 +34,19 @@ async function saveReviewImage(listingId: string, image: File) {
     throw new Error("Review image must be smaller than 5MB");
   }
 
-  const extension =
-    path.extname(image.name || "").toLowerCase() ||
-    ({
-      "image/jpeg": ".jpg",
-      "image/png": ".png",
-      "image/webp": ".webp",
-    } as const)[image.type] ||
-    ".bin";
+  const extByMime: Record<string, string> = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+  };
+  const extension = extByMime[image.type] || ".jpg";
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "reviews");
-  await mkdir(uploadDir, { recursive: true });
-
-  const fileName = `${listingId}-${Date.now()}${extension}`;
-  const filePath = path.join(uploadDir, fileName);
-
-  await writeFile(filePath, Buffer.from(await image.arrayBuffer()));
-  return `/uploads/reviews/${fileName}`;
+  const fileName = `reviews/${listingId}-${Date.now()}${extension}`;
+  const blob = await put(fileName, image, {
+    access: "public",
+    token: getBlobTokenOrThrow(),
+  });
+  return blob.url;
 }
 
 export async function GET(

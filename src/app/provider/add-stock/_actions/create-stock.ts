@@ -6,6 +6,23 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { put } from "@vercel/blob";
 
+function getBlobTokenOrThrow(): string {
+	const token =
+		(typeof process.env.BLOB_READ_WRITE_TOKEN === "string" &&
+			process.env.BLOB_READ_WRITE_TOKEN.trim()) ||
+		(typeof process.env.VERCEL_BLOB_READ_WRITE_TOKEN === "string" &&
+			process.env.VERCEL_BLOB_READ_WRITE_TOKEN.trim()) ||
+		"";
+
+	if (!token) {
+		throw new Error(
+			"Vercel Blob token is missing. Set BLOB_READ_WRITE_TOKEN (or VERCEL_BLOB_READ_WRITE_TOKEN)."
+		);
+	}
+
+	return token;
+}
+
 type CreateStockResponse = {
 	success: boolean;
 	message?: string;
@@ -66,7 +83,10 @@ async function saveListingImages(providerProfileId: string, images: File[]): Pro
 			const extension = extByMime[image.type] || ".jpg";
 
 			const fileName = `provider-listings/${providerProfileId}-${Date.now()}-${index}${extension}`;
-			const blob = await put(fileName, image, { access: "public" });
+			const blob = await put(fileName, image, {
+				access: "public",
+				token: getBlobTokenOrThrow(),
+			});
 			return blob.url;
 		})
 	);

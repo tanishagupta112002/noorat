@@ -1,7 +1,23 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { put } from "@vercel/blob";
+
+function getBlobTokenOrThrow(): string {
+	const token =
+		(typeof process.env.BLOB_READ_WRITE_TOKEN === "string" &&
+			process.env.BLOB_READ_WRITE_TOKEN.trim()) ||
+		(typeof process.env.VERCEL_BLOB_READ_WRITE_TOKEN === "string" &&
+			process.env.VERCEL_BLOB_READ_WRITE_TOKEN.trim()) ||
+		"";
+
+	if (!token) {
+		throw new Error(
+			"Vercel Blob token is missing. Set BLOB_READ_WRITE_TOKEN (or VERCEL_BLOB_READ_WRITE_TOKEN)."
+		);
+	}
+
+	return token;
+}
 
 async function getProviderId(req: Request) {
 	const session = await auth.api.getSession({ headers: req.headers });
@@ -18,9 +34,6 @@ async function getProviderId(req: Request) {
 async function saveListingImages(listingId: string, images: File[]): Promise<string[]> {
 	const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
 	const maxSizeBytes = 5 * 1024 * 1024;
-	const uploadDir = path.join(process.cwd(), "public", "uploads", "provider-listings");
-
-	await mkdir(uploadDir, { recursive: true });
 
 	return Promise.all(
 		images.map(async (image, index) => {
@@ -32,20 +45,19 @@ async function saveListingImages(listingId: string, images: File[]): Promise<str
 				throw new Error("Each listing image must be smaller than 5MB");
 			}
 
-			const extension =
-				path.extname(image.name || "").toLowerCase() ||
-				({
-					"image/jpeg": ".jpg",
-					"image/png": ".png",
-					"image/webp": ".webp",
-				} as const)[image.type] ||
-				".bin";
+			const extByMime: Record<string, string> = {
+				"image/jpeg": ".jpg",
+				"image/png": ".png",
+				"image/webp": ".webp",
+			};
+			const extension = extByMime[image.type] || ".jpg";
 
-			const fileName = `${listingId}-${Date.now()}-${index}${extension}`;
-			const filePath = path.join(uploadDir, fileName);
-
-			await writeFile(filePath, Buffer.from(await image.arrayBuffer()));
-			return `/uploads/provider-listings/${fileName}`;
+			const fileName = `provider-listings/${listingId}-${Date.now()}-${index}${extension}`;
+			const blob = await put(fileName, image, {
+				access: "public",
+				token: getBlobTokenOrThrow(),
+			});
+			return blob.url;
 		})
 	);
 }

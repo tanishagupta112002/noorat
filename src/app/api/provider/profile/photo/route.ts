@@ -1,11 +1,26 @@
-import { mkdir, unlink, writeFile } from "fs/promises";
-import path from "path";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { put, del } from "@vercel/blob";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "provider-profile");
+
+function getBlobTokenOrThrow(): string {
+  const token =
+    (typeof process.env.BLOB_READ_WRITE_TOKEN === "string" &&
+      process.env.BLOB_READ_WRITE_TOKEN.trim()) ||
+    (typeof process.env.VERCEL_BLOB_READ_WRITE_TOKEN === "string" &&
+      process.env.VERCEL_BLOB_READ_WRITE_TOKEN.trim()) ||
+    "";
+
+  if (!token) {
+    throw new Error(
+      "Vercel Blob token is missing. Set BLOB_READ_WRITE_TOKEN (or VERCEL_BLOB_READ_WRITE_TOKEN)."
+    );
+  }
+
+  return token;
+}
 
 async function getProviderProfile(req: Request) {
   const session = await auth.api.getSession({ headers: req.headers });
@@ -26,26 +41,15 @@ function buildFileName(providerId: string, file: File) {
     "image/webp": ".webp",
   };
 
-  const extFromName = path.extname(file.name || "").toLowerCase();
-  const extension = extFromName || extByMime[file.type] || ".bin";
-
+  const extension = extByMime[file.type] || ".jpg";
   return `${providerId}-${Date.now()}${extension}`;
 }
 
-function toAbsoluteUploadPath(relativePath: string) {
-  if (!relativePath.startsWith("/uploads/provider-profile/")) return null;
-  const fileName = path.basename(relativePath);
-  return path.join(UPLOAD_DIR, fileName);
-}
-
-async function removeExistingFile(relativePath: string | null | undefined) {
-  if (!relativePath) return;
-
-  const absolutePath = toAbsoluteUploadPath(relativePath);
-  if (!absolutePath) return;
+async function removeExistingFile(blobUrl: string | null | undefined) {
+  if (!blobUrl) return;
 
   try {
-    await unlink(absolutePath);
+    await del(blobUrl, { token: getBlobTokenOrThrow() });
   } catch {
     // Ignore missing files and continue.
   }
@@ -73,17 +77,15 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: "Profile photo must be smaller than 5MB" }, { status: 400 });
     }
 
-    await mkdir(UPLOAD_DIR, { recursive: true });
-
-    const fileName = buildFileName(profile.id, photo);
-    const absolutePath = path.join(UPLOAD_DIR, fileName);
-    const relativePath = `/uploads/provider-profile/${fileName}`;
-
-    await writeFile(absolutePath, Buffer.from(await photo.arrayBuffer()));
+    const fileName = `provider-profile/${buildFileName(profile.id, photo)}`;
+    const blob = await put(fileName, photo, {
+      access: "public",
+      token: getBlobTokenOrThrow(),
+    });
 
     const updatedProfile = await prisma.providerProfile.update({
       where: { id: profile.id },
-      data: { profilePhoto: relativePath },
+      data: { profilePhoto: blob.url },
       select: { profilePhoto: true },
     });
 

@@ -95,7 +95,9 @@ export default function OnboardingLayout({
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
-        <Logo className="mb-6 flex justify-center md:mb-8" />
+        <div className="mb-6 flex w-full justify-center md:mb-8">
+          <Logo />
+        </div>
 
         {/* Mobile Step Indicator */}
         <div className="mb-4 flex items-center justify-center gap-1 md:hidden">
