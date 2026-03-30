@@ -13,17 +13,18 @@ export async function sendOtpAction(email: string) {
 }
 
 export async function verifyOtpAction({
-  email, otp, password, name, 
+  email, otp, password, name, role,
 }: {
   email: string;
   otp: string;
   password: string;
   name: string;
+  role: "CUSTOMER" | "PROVIDER";
 }) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/email-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "verify", email, otp, password, name}),
+    body: JSON.stringify({ action: "verify", email, otp, password, name, role }),
   });
 
   const result = await res.json();

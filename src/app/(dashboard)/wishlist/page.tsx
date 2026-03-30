@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { RentNowButton } from "@/components/cart/RentNowButton";
 import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
 
 function formatPrice(value: number) {
@@ -123,12 +124,12 @@ export default async function WishlistPage() {
                     >
                       Add to Cart
                     </AddToCartButton>
-                    <Link
-                      href={`/rentals/item/${listing.id}`}
+                    <RentNowButton
+                      itemId={listing.id}
                       className="inline-flex items-center justify-center rounded-sm bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
                     >
                       Rent Now
-                    </Link>
+                    </RentNowButton>
                   </div>
                 </div>
               </article>

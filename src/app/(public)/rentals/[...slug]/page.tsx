@@ -98,10 +98,6 @@ function buildRentalsHref(config: SubpageConfig, rawParams: Record<string, strin
   return query ? `/rentals?${query}` : "/rentals";
 }
 
-export function generateStaticParams() {
-  return Object.keys(SUBPAGE_CATEGORY_LABELS).map((path) => ({ slug: path.split("/") }));
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const config = resolveSubpageConfig(slug);

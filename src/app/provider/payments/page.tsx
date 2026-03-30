@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import { ArrowRightLeft, BadgeIndianRupee, ReceiptText, Wallet } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -14,12 +15,17 @@ function formatCurrency(value: number) {
 	}).format(value);
 }
 
-function formatDate(date: Date) {
+function formatDate(date: Date | string | number) {
+	const normalizedDate = date instanceof Date ? date : new Date(date);
+	if (Number.isNaN(normalizedDate.getTime())) {
+		return "—";
+	}
+
 	return new Intl.DateTimeFormat("en-IN", {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
-	}).format(date);
+	}).format(normalizedDate);
 }
 
 function getOrderBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
@@ -34,6 +40,67 @@ function getOrderBadgeVariant(status: string): "default" | "secondary" | "destru
 			return "outline";
 	}
 }
+
+const getProviderPaymentsData = unstable_cache(
+	async (providerId: string) => {
+		const [grossValue, paidOrdersCount, cancelledOrdersCount, recentTransactions] = await prisma.$transaction([
+			prisma.order.aggregate({
+				where: {
+					providerId,
+					status: { not: "CANCELLED" },
+				},
+				_sum: { total: true },
+			}),
+			prisma.order.count({
+				where: {
+					providerId,
+					status: "COMPLETED",
+				},
+			}),
+			prisma.order.count({
+				where: {
+					providerId,
+					status: "CANCELLED",
+				},
+			}),
+			prisma.order.findMany({
+				where: {
+					providerId,
+					status: { not: "CANCELLED" },
+				},
+				orderBy: { createdAt: "desc" },
+				take: 8,
+				select: {
+					id: true,
+					total: true,
+					status: true,
+					createdAt: true,
+					listing: {
+						select: {
+							title: true,
+							size: true,
+						},
+					},
+					user: {
+						select: {
+							name: true,
+							email: true,
+						},
+					},
+				},
+			}),
+		]);
+
+		return {
+			grossSales: grossValue._sum.total ?? 0,
+			paidOrdersCount,
+			cancelledOrdersCount,
+			recentTransactions,
+		};
+	},
+	["provider-payments-page-data"],
+	{ revalidate: 20 },
+);
 
 export default async function ProviderPaymentsPage() {
 	const session = await auth.api.getSession({ headers: await headers() });
@@ -52,56 +119,7 @@ export default async function ProviderPaymentsPage() {
 	}
 
 	const providerId = providerProfile.id;
-
-	const [grossValue, paidOrdersCount, cancelledOrdersCount, recentTransactions] = await Promise.all([
-		prisma.order.aggregate({
-			where: {
-				providerId,
-				status: { not: "CANCELLED" },
-			},
-			_sum: { total: true },
-		}),
-		prisma.order.count({
-			where: {
-				providerId,
-				status: "COMPLETED",
-			},
-		}),
-		prisma.order.count({
-			where: {
-				providerId,
-				status: "CANCELLED",
-			},
-		}),
-		prisma.order.findMany({
-			where: {
-				providerId,
-				status: { not: "CANCELLED" },
-			},
-			orderBy: { createdAt: "desc" },
-			take: 8,
-			select: {
-				id: true,
-				total: true,
-				status: true,
-				createdAt: true,
-				listing: {
-					select: {
-						title: true,
-						size: true,
-					},
-				},
-				user: {
-					select: {
-						name: true,
-						email: true,
-					},
-				},
-			},
-		}),
-	]);
-
-	const grossSales = grossValue._sum.total ?? 0;
+	const { grossSales, paidOrdersCount, cancelledOrdersCount, recentTransactions } = await getProviderPaymentsData(providerId);
 	const estimatedPayout = grossSales * 0.9;
 
 	return (

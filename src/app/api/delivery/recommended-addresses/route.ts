@@ -35,9 +35,12 @@ export async function GET() {
     return Response.json({ addresses: [] as RecommendedAddress[] });
   }
 
+  const userId = session.user.id;
+
+  // Fetch ONLY current user's addresses
   const [user, provider] = await prisma.$transaction([
     prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: {
         address: true,
         city: true,
@@ -45,8 +48,9 @@ export async function GET() {
         pincode: true,
       },
     }),
+    // Only fetch if user is also a provider
     prisma.providerProfile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId },
       select: {
         address: true,
         city: true,
@@ -58,7 +62,8 @@ export async function GET() {
 
   const rawAddresses: RecommendedAddress[] = [];
 
-  if (user && (user.address || user.city || user.state || user.pincode)) {
+  // Add user profile address only if it has at least address line or pincode
+  if (user && (user.address?.trim() || user.pincode?.trim())) {
     rawAddresses.push({
       source: "user-profile",
       addressLine: normalizeText(user.address),
@@ -68,7 +73,8 @@ export async function GET() {
     });
   }
 
-  if (provider && (provider.address || provider.city || provider.state || provider.pincode)) {
+  // Add provider profile address only if it's not duplicate and has data
+  if (provider && (provider.address?.trim() || provider.pincode?.trim())) {
     rawAddresses.push({
       source: "provider-profile",
       addressLine: normalizeText(provider.address),
@@ -78,13 +84,17 @@ export async function GET() {
     });
   }
 
+  // Deduplicate addresses
   const seen = new Set<string>();
   const addresses: RecommendedAddress[] = [];
 
   for (const item of rawAddresses) {
+    // Skip if no meaningful data
     if (!item.addressLine && !item.pincode) continue;
+    
     const sig = toSignature(item);
     if (seen.has(sig)) continue;
+    
     seen.add(sig);
     addresses.push(item);
   }

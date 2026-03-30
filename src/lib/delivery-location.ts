@@ -13,10 +13,22 @@ export type DeliveryLocationBook = {
   addresses: SavedDeliveryAddress[];
 };
 
-export const DELIVERY_BOOK_KEY = "tt_delivery_location_book";
-export const DELIVERY_PROMPT_SEEN_KEY = "tt_delivery_location_prompt_seen";
+// User-scoped storage keys (will include userId at runtime)
+const DELIVERY_BOOK_KEY_PREFIX = "tt_delivery_location_book";
+const DELIVERY_PROMPT_SEEN_KEY_PREFIX = "tt_delivery_location_prompt_seen";
 export const DELIVERY_BOOK_UPDATED_EVENT = "tt_delivery_book_updated";
 const LEGACY_LOCATION_KEY = "tt_user_location";
+
+// Helpers to get user-scoped keys
+export function getDeliveryBookKey(userId?: string): string {
+  if (!userId) return DELIVERY_BOOK_KEY_PREFIX;
+  return `${DELIVERY_BOOK_KEY_PREFIX}_${userId}`;
+}
+
+export function getDeliveryPromptSeenKey(userId?: string): string {
+  if (!userId) return DELIVERY_PROMPT_SEEN_KEY_PREFIX;
+  return `${DELIVERY_PROMPT_SEEN_KEY_PREFIX}_${userId}`;
+}
 
 function isClient() {
   return typeof window !== "undefined";
@@ -88,11 +100,12 @@ function fromLegacyLocation(): DeliveryLocationBook {
   };
 }
 
-export function readDeliveryLocationBook(): DeliveryLocationBook {
+export function readDeliveryLocationBook(userId?: string): DeliveryLocationBook {
   if (!isClient()) return { selectedId: null, addresses: [] };
 
+  const key = getDeliveryBookKey(userId);
   const parsed = safeJsonParse<Partial<DeliveryLocationBook>>(
-    window.localStorage.getItem(DELIVERY_BOOK_KEY)
+    window.localStorage.getItem(key)
   );
   const normalized = normalizeBook(parsed);
 
@@ -100,19 +113,66 @@ export function readDeliveryLocationBook(): DeliveryLocationBook {
     return normalized;
   }
 
-  const migrated = fromLegacyLocation();
-  if (migrated.addresses.length > 0) {
-    writeDeliveryLocationBook(migrated);
-    return migrated;
+  // Only use legacy location for anonymous users (no userId)
+  if (!userId) {
+    const migrated = fromLegacyLocation();
+    if (migrated.addresses.length > 0) {
+      writeDeliveryLocationBook(migrated, userId);
+      return migrated;
+    }
   }
 
   return normalized;
 }
 
-export function writeDeliveryLocationBook(book: DeliveryLocationBook) {
+export function writeDeliveryLocationBook(book: DeliveryLocationBook, userId?: string) {
   if (!isClient()) return;
-  window.localStorage.setItem(DELIVERY_BOOK_KEY, JSON.stringify(book));
+  const key = getDeliveryBookKey(userId);
+  window.localStorage.setItem(key, JSON.stringify(book));
   window.dispatchEvent(new Event(DELIVERY_BOOK_UPDATED_EVENT));
+}
+
+/**
+ * Clear old localStorage entries for a user (for logout/user change)
+ */
+export function clearDeliveryLocationBook(userId?: string) {
+  if (!isClient()) return;
+  const key = getDeliveryBookKey(userId);
+  window.localStorage.removeItem(key);
+}
+
+export function clearDeliveryPromptSeen(userId?: string) {
+  if (!isClient()) return;
+  const key = getDeliveryPromptSeenKey(userId);
+  window.localStorage.removeItem(key);
+}
+
+export function clearLegacyDeliveryLocation() {
+  if (!isClient()) return;
+  window.localStorage.removeItem(LEGACY_LOCATION_KEY);
+}
+
+export function clearAllDeliveryLocationCache() {
+  if (!isClient()) return;
+
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (!key) continue;
+    if (
+      key === DELIVERY_BOOK_KEY_PREFIX ||
+      key.startsWith(`${DELIVERY_BOOK_KEY_PREFIX}_`) ||
+      key === DELIVERY_PROMPT_SEEN_KEY_PREFIX ||
+      key.startsWith(`${DELIVERY_PROMPT_SEEN_KEY_PREFIX}_`) ||
+      key === LEGACY_LOCATION_KEY
+    ) {
+      keysToRemove.push(key);
+    }
+  }
+
+  for (const key of keysToRemove) {
+    window.localStorage.removeItem(key);
+  }
 }
 
 export function getSelectedDeliveryAddress(book: DeliveryLocationBook): SavedDeliveryAddress | null {

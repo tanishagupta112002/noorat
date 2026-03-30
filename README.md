@@ -5,7 +5,7 @@ noorat is a Next.js 16 fashion rental marketplace with:
 - customer browsing, wishlist, cart, checkout, and order history
 - provider onboarding (6 steps), inventory, profile, and dashboard flows
 - OTP-based auth and provider mobile verification
-- Razorpay payment initiation and verification APIs
+- Manual QR UPI + COD checkout flow
 
 ## Tech Stack
 
@@ -13,7 +13,7 @@ noorat is a Next.js 16 fashion rental marketplace with:
 - Styling/UI: Tailwind CSS v4, Radix UI, custom components
 - Auth: better-auth (+ Google social sign-in)
 - Database: PostgreSQL + Prisma ORM (Prisma 7)
-- Payments: Razorpay (online) + COD
+- Payments: Manual QR UPI + COD
 - SMS/OTP: Twilio
 
 ## Key App Areas
@@ -84,11 +84,11 @@ Copy from `.env.example` and set values as needed.
 	- `TWILIO_MESSAGING_SERVICE_SID`, or
 	- `TWILIO_VERIFY_SERVICE_SID`
 
-### Razorpay
+### Manual QR UPI
 
-- `RAZORPAY_KEY_ID`
-- `RAZORPAY_KEY_SECRET`
-- `NEXT_PUBLIC_RAZORPAY_KEY_ID`
+- `NEXT_PUBLIC_PAYMENT_UPI_ID`
+- `NEXT_PUBLIC_PAYMENT_UPI_NAME`
+- `NEXT_PUBLIC_PAYMENT_QR_IMAGE_URL` (optional)
 
 ## Useful Commands
 
@@ -112,9 +112,9 @@ This endpoint validates Twilio credentials and sender configuration so onboardin
 
 ## Payment Notes
 
-- COD and online (Razorpay) flows are supported.
-- `/api/payments/checkout/initiate` creates Razorpay order for online mode.
-- `/api/payments/checkout/verify` verifies signature and amount before order creation.
+- COD and manual QR UPI flows are supported.
+- `/api/payments/checkout` (alias of initiate route) creates orders directly after checkout confirmation.
+- For QR UPI mode, customer scans QR and confirms payment in checkout before order creation.
 
 ## Deployment (Vercel)
 
@@ -153,6 +153,6 @@ pnpm build
 	- run `pnpm prisma generate`
 	- check `DATABASE_URL`
 - Payment issues:
-	- confirm Razorpay keys
-	- ensure `NEXT_PUBLIC_RAZORPAY_KEY_ID` matches backend key pair
+	- confirm `NEXT_PUBLIC_PAYMENT_UPI_ID` is set
+	- optionally set `NEXT_PUBLIC_PAYMENT_QR_IMAGE_URL` if you want a custom static QR image
 

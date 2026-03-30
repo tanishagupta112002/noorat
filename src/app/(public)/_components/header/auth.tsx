@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Heart, LogOut, ShoppingBag, ShoppingCart, Store, User } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -15,28 +15,129 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const CART_COUNT_CACHE_TTL_MS = 15_000;
+const PROVIDER_ACCESS_CACHE_TTL_MS = 5 * 60_000;
+
+type TimedCache<T> = {
+  value: T;
+  expiresAt: number;
+};
+
+function getCacheKey(prefix: string, userId: string) {
+  return `${prefix}:${userId}`;
+}
+
+function readTimedCache<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as TimedCache<T>;
+    if (!parsed?.expiresAt || Date.now() > parsed.expiresAt) {
+      window.sessionStorage.removeItem(key);
+      return null;
+    }
+
+    return parsed.value;
+  } catch {
+    return null;
+  }
+}
+
+function writeTimedCache<T>(key: string, value: T, ttlMs: number) {
+  if (typeof window === "undefined") return;
+
+  try {
+    const payload: TimedCache<T> = {
+      value,
+      expiresAt: Date.now() + ttlMs,
+    };
+    window.sessionStorage.setItem(key, JSON.stringify(payload));
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
 export default function Auth() {
   const router = useRouter();
-  const pathname = usePathname();
   const { data: session, isPending } = authClient.useSession();
   const [providerHref, setProviderHref] = useState("/become-a-provider/onboarding");
   const [canAccessProviderMode, setCanAccessProviderMode] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
-  // Fetch cart count whenever user is logged in or navigates
   useEffect(() => {
-    if (!session?.user) {
+    const userId = session?.user?.id;
+
+    if (!userId) {
       setCartCount(0);
       return;
     }
-    fetch("/api/cart/count")
-      .then((r) => r.json())
-      .then((d: { count?: number }) => setCartCount(d.count ?? 0))
-      .catch(() => setCartCount(0));
-  }, [session?.user, pathname]);
+
+    const cacheKey = getCacheKey("tt_cart_count", userId);
+    const cachedCount = readTimedCache<number>(cacheKey);
+    if (typeof cachedCount === "number") {
+      setCartCount(cachedCount);
+    }
+
+    let active = true;
+
+    async function refreshCartCount() {
+      try {
+        const response = await fetch("/api/cart/count", { cache: "no-store" });
+        const data = (await response.json()) as { count?: number };
+        const count = data.count ?? 0;
+
+        if (!active) return;
+
+        setCartCount(count);
+        writeTimedCache(cacheKey, count, CART_COUNT_CACHE_TTL_MS);
+      } catch {
+        if (!active) return;
+        setCartCount(0);
+      }
+    }
+
+    if (cachedCount === null) {
+      void refreshCartCount();
+    }
+
+    const handleCartUpdated = () => {
+      void refreshCartCount();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshCartCount();
+      }
+    };
+
+    window.addEventListener("cart:updated", handleCartUpdated);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      active = false;
+      window.removeEventListener("cart:updated", handleCartUpdated);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [session?.user?.id]);
 
   useEffect(() => {
-    if (!session?.user) {
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      setCanAccessProviderMode(false);
+      setProviderHref("/become-a-provider/onboarding");
+      return;
+    }
+
+    const cacheKey = getCacheKey("tt_provider_access", userId);
+    const cached = readTimedCache<{ canAccessProviderMode: boolean; providerHref: string }>(cacheKey);
+
+    if (cached) {
+      setCanAccessProviderMode(Boolean(cached.canAccessProviderMode));
+      setProviderHref(cached.providerHref || "/become-a-provider/onboarding");
       return;
     }
 
@@ -65,6 +166,14 @@ export default function Auth() {
 
         setCanAccessProviderMode(Boolean(data.canAccessProviderMode));
         setProviderHref(data.providerHref || "/become-a-provider/onboarding");
+        writeTimedCache(
+          cacheKey,
+          {
+            canAccessProviderMode: Boolean(data.canAccessProviderMode),
+            providerHref: data.providerHref || "/become-a-provider/onboarding",
+          },
+          PROVIDER_ACCESS_CACHE_TTL_MS,
+        );
       } catch {
         if (!active) {
           return;
@@ -80,12 +189,11 @@ export default function Auth() {
     return () => {
       active = false;
     };
-  }, [session?.user]);
+  }, [session?.user?.id]);
 
   const handleSignOut = async () => {
     await authClient.signOut();
     router.push("/");
-    router.refresh();
   };
 
   if (isPending) {

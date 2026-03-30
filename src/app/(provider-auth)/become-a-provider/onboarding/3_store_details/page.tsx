@@ -12,10 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   submitStoreDetailsAction,
-  getOnboardingStatus,
 } from "../_actions/onboarding-actions";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -33,24 +32,6 @@ export default function StoreDetails() {
     resolver: zodResolver(schema),
     defaultValues: { providerType: "BOUTIQUE" },
   });
-
-  useEffect(() => {
-    let active = true;
-
-    async function checkStep() {
-      const { nextStep } = await getOnboardingStatus();
-      if (!active) return;
-      if (nextStep !== "/become-a-provider/onboarding/3_store_details") {
-        router.replace(nextStep);
-      }
-    }
-
-    void checkStep();
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   const onSubmit = form.handleSubmit(async (data) => {
     try {

@@ -33,8 +33,12 @@ type InventoryListing = {
   originalPrice: number;
   price: number;
   status: boolean;
+  stockQuantity: number;
   createdAt: string;
   updatedAt: string;
+  // Live availability (not editable directly)
+  activeOrderCount: number;
+  nextAvailableAt: string | null;
 };
 
 type InventoryManagerProps = {
@@ -49,12 +53,48 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-function formatDate(dateIso: string) {
+function formatDate(dateIso: string | null) {
+  if (!dateIso) return "—";
   return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
   }).format(new Date(dateIso));
+}
+
+function AvailabilityBadge({
+  stockQuantity,
+  activeOrderCount,
+  nextAvailableAt,
+}: {
+  stockQuantity: number;
+  activeOrderCount: number;
+  nextAvailableAt: string | null;
+}) {
+  const availableUnits = Math.max(0, stockQuantity - activeOrderCount);
+
+  if (availableUnits <= 0) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+        Fully Booked{nextAvailableAt ? ` · Free ${formatDate(nextAvailableAt)}` : ""}
+      </span>
+    );
+  }
+  if (activeOrderCount > 0) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+        {availableUnits} of {stockQuantity} Available
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+      Available · {stockQuantity} in stock
+    </span>
+  );
 }
 
 function hasOption(options: string[], value: string) {
@@ -66,7 +106,7 @@ export function InventoryManager({ initialListings }: InventoryManagerProps) {
   const [listings, setListings] = useState(initialListings);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<
-    Record<string, Omit<InventoryListing, "createdAt" | "updatedAt" | "images">>
+    Record<string, Omit<InventoryListing, "createdAt" | "updatedAt" | "images" | "activeOrderCount" | "nextAvailableAt">>
   >({});
   const [selectedImageIndex, setSelectedImageIndex] = useState<
     Record<string, number>
@@ -122,6 +162,7 @@ export function InventoryManager({ initialListings }: InventoryManagerProps) {
         originalPrice: listing.originalPrice,
         price: listing.price,
         status: listing.status,
+        stockQuantity: listing.stockQuantity,
       },
     }));
   };
@@ -153,6 +194,7 @@ export function InventoryManager({ initialListings }: InventoryManagerProps) {
           originalPrice: draft.originalPrice,
           price: draft.price,
           status: draft.status,
+          stockQuantity: draft.stockQuantity,
         }),
       });
 
@@ -175,6 +217,7 @@ export function InventoryManager({ initialListings }: InventoryManagerProps) {
                 originalPrice: data.listing.originalPrice,
                 price: data.listing.price,
                 status: data.listing.status,
+                stockQuantity: data.listing.stockQuantity ?? listing.stockQuantity,
                 images: data.listing.images,
                 updatedAt: data.listing.updatedAt,
               }
@@ -358,6 +401,12 @@ export function InventoryManager({ initialListings }: InventoryManagerProps) {
                         <Badge variant={listing.status ? "default" : "outline"}>
                           {listing.status ? "Active" : "Paused"}
                         </Badge>
+
+                        <AvailabilityBadge
+                          stockQuantity={listing.stockQuantity}
+                          activeOrderCount={listing.activeOrderCount}
+                          nextAvailableAt={listing.nextAvailableAt}
+                        />
                       </div>
 
                       <CardDescription>
@@ -632,6 +681,31 @@ export function InventoryManager({ initialListings }: InventoryManagerProps) {
                             { value: "paused", label: "Paused" },
                           ]}
                         />
+
+                        <div className="space-y-2">
+                          <Label>Stock Qty</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={current.stockQuantity}
+                            disabled={!isEditing}
+                            onChange={(event) =>
+                              setDrafts((prev) => ({
+                                ...prev,
+                                [listing.id]: {
+                                  ...(prev[listing.id] || current),
+                                  stockQuantity: Math.max(1, Number(event.target.value || 1)),
+                                },
+                              }))
+                            }
+                          />
+                          {!isEditing && listing.activeOrderCount > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {listing.activeOrderCount} actively rented ·{" "}
+                              {Math.max(0, listing.stockQuantity - listing.activeOrderCount)} free
+                            </p>
+                          )}
+                        </div>
 
                         <div className="rounded-2xl bg-muted/60 p-4 sm:col-span-2">
                           <p className="text-xs uppercase tracking-wide text-muted-foreground">

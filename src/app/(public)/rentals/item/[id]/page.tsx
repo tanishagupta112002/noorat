@@ -19,20 +19,19 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { RentNowButton } from "@/components/cart/RentNowButton";
 import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
 
 import { RentalProductCard } from "@/app/(public)/rentals/_components/RentalProductCard";
 import {
   getListingReviews,
   getRentalById,
-  getRentals,
-  getRentalsByProviderSlug,
+  getProviderListingCount,
   getSimilarRentals,
 } from "@/app/(public)/rentals/_services/getRentals";
 
 import { ImageGallery } from "./_components/ImageGallery";
 import RentalPolicyBadges from "./_components/RentalPolicyBadges";
-import { ReviewForm } from "./_components/ReviewForm";
 import DeliveryDetailsCard from "./_components/DeliveryDetailsCard";
 
 type PageProps = {
@@ -41,12 +40,7 @@ type PageProps = {
 
 const placeholderImage = "/images/image.png";
 
-export const dynamic = "force-dynamic";
-
-export async function generateStaticParams() {
-  const rentals = await getRentals();
-  return rentals.map((rental) => ({ id: rental.id }));
-}
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
@@ -73,12 +67,21 @@ function formatReviewCount(count: number) {
   return String(count);
 }
 
-function formatReviewDate(value: Date) {
+function formatReviewDate(value: Date | string | number) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
   return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(value);
+  }).format(date);
+}
+
+function isVideoMedia(url: string) {
+  return /\.(mp4|webm|mov)(\?.*)?$/i.test(url);
 }
 
 function buildRatingDistribution(ratings: number[]) {
@@ -124,7 +127,7 @@ export default async function RentalDetailPage({ params }: PageProps) {
   const [reviews, similar, providerListings] = await Promise.all([
     getListingReviews(id),
     getSimilarRentals(id, rental.category, 4),
-    getRentalsByProviderSlug(rental.providerSlug),
+    getProviderListingCount(rental.providerId),
   ]);
 
   const ratings = reviews.map((review) => review.rating);
@@ -144,7 +147,7 @@ export default async function RentalDetailPage({ params }: PageProps) {
     .map((item) => item.trim())
     .filter(Boolean);
 
-  const providerItemCount = providerListings.length;
+  const providerItemCount = providerListings;
 
   return (
     <div className="min-h-screen bg-white">
@@ -281,12 +284,15 @@ export default async function RentalDetailPage({ params }: PageProps) {
                   Add to Cart
                 </>
               </AddToCartButton>
-              <Button asChild size="lg" className="flex-1 gap-2 h-11 text-sm shadow-sm">
-                <Link href="/cart">
+              <RentNowButton
+                itemId={rental.id}
+                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90"
+              >
+                <>
                   <ShoppingCart className="h-4 w-4" />
                   Rent Now
-                </Link>
-              </Button>
+                </>
+              </RentNowButton>
             </div>
           </div>
         </div>
@@ -302,12 +308,15 @@ export default async function RentalDetailPage({ params }: PageProps) {
               Add to Cart
             </>
           </AddToCartButton>
-          <Button asChild size="lg" className="flex-1 gap-2 h-11 text-sm shadow-sm">
-            <Link href="/cart">
+          <RentNowButton
+            itemId={rental.id}
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90"
+          >
+            <>
               <ShoppingCart className="h-4 w-4" />
               Rent Now
-            </Link>
-          </Button>
+            </>
+          </RentNowButton>
         </div>
         
       </div>
@@ -372,7 +381,16 @@ export default async function RentalDetailPage({ params }: PageProps) {
                     <p className="text-xs sm:text-sm leading-5 sm:leading-6 text-muted-foreground">{review.comment}</p>
                     {review.imageUrl ? (
                       <div className="relative h-32 sm:h-40 w-24 sm:w-32 overflow-hidden rounded-md border border-border/60 bg-muted/20">
-                        <Image src={review.imageUrl} alt="Review upload" fill className="object-contain p-1" />
+                        {isVideoMedia(review.imageUrl) ? (
+                          <video
+                            src={review.imageUrl}
+                            className="h-full w-full object-cover"
+                            controls
+                            preload="metadata"
+                          />
+                        ) : (
+                          <Image src={review.imageUrl} alt="Review upload" fill className="object-contain p-1" />
+                        )}
                       </div>
                     ) : null}
                   </div>
@@ -381,12 +399,6 @@ export default async function RentalDetailPage({ params }: PageProps) {
                 <p className="py-6 text-center text-sm text-muted-foreground">No reviews yet.</p>
               )}
             </div>
-          </div>
-
-          <div className="mt-6 sm:mt-10 rounded-lg sm:rounded-2xl border border-border/60 bg-white p-5 sm:p-6">
-            <h3 className="font-playfair text-lg sm:text-xl font-semibold">Write a Review</h3>
-            <p className="mb-4 sm:mb-5 mt-1 text-xs sm:text-sm text-muted-foreground">Share your experience to help others.</p>
-            <ReviewForm itemId={id} />
           </div>
         </div>
       </div>

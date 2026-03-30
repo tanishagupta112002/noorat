@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 
 import { CartItemControls } from "./_components/CartItemControls";
 import { CheckoutButton } from "./_components/CheckoutButton";
+import { CartAvailabilityAlert } from "./_components/CartAvailabilityAlert";
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -94,14 +95,14 @@ export default async function CartPage() {
       </div>
 
       {cartItems.length === 0 ? (
-        <div className="rounded-sm border border-[#ececec] bg-white p-12 text-center">
+        <div className="rounded-sm border border-[#ececec] bg-white p-6 text-center sm:p-12">
           <p className="text-lg text-muted-foreground">Your cart is empty.</p>
           <Link href="/rentals" className="mt-4 inline-block rounded-sm bg-primary px-6 py-2 font-medium text-primary-foreground transition hover:opacity-90">
             Continue Shopping
           </Link>
         </div>
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
+        <div className="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
           <div className="space-y-4">
             {cartItems.map((item) => {
               const listing = item.listing;
@@ -115,7 +116,7 @@ export default async function CartPage() {
                   key={item.id} 
                   className="overflow-hidden rounded-sm border border-[#ececec] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-md"
                 >
-                  <div className="grid gap-5 p-4 sm:grid-cols-[132px_minmax(0,1fr)] lg:grid-cols-[132px_minmax(0,1fr)_124px] xl:grid-cols-[148px_minmax(0,1fr)_150px] xl:px-5 xl:py-4">
+                  <div className="grid grid-cols-[92px_minmax(0,1fr)] gap-3 p-3 sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-5 sm:p-4 lg:grid-cols-[132px_minmax(0,1fr)_124px] xl:grid-cols-[148px_minmax(0,1fr)_150px] xl:px-5 xl:py-4">
                     {/* Product Image */}
                     <Link 
                       href={`/rentals/item/${listing.id}`} 
@@ -126,7 +127,7 @@ export default async function CartPage() {
                         alt={listing.title}
                         fill
                         className="object-contain p-2 transition-transform"
-                        sizes="140px"
+                        sizes="(max-width: 640px) 92px, (max-width: 1024px) 132px, 148px"
                       />
                       {discount > 0 && (
                         <div className="absolute top-2 right-2 rounded-full bg-destructive px-2 py-1 text-xs font-bold text-background">
@@ -143,7 +144,7 @@ export default async function CartPage() {
                         </p>
                         <Link 
                           href={`/rentals/item/${listing.id}`} 
-                          className="mt-1 line-clamp-2 text-lg font-semibold leading-7 text-foreground transition hover:text-primary"
+                          className="mt-1 line-clamp-2 text-base font-semibold leading-6 text-foreground transition hover:text-primary sm:text-lg sm:leading-7"
                         >
                           {listing.title}
                         </Link>
@@ -180,7 +181,7 @@ export default async function CartPage() {
                     </div>
 
                     {/* Controls */}
-                    <div className="flex flex-row items-center justify-between gap-4 border-t border-[#f1f1f1] pt-3 sm:border-t-0 sm:pt-0 lg:min-h-full lg:flex-col lg:items-end lg:justify-between">
+                    <div className="col-span-2 flex flex-row items-center justify-between gap-4 border-t border-[#f1f1f1] pt-3 sm:col-span-2 sm:border-t sm:pt-3 lg:col-span-1 lg:min-h-full lg:flex-col lg:items-end lg:justify-between lg:border-t-0 lg:pt-0">
                       
                       <CartItemControls itemId={listing.id} quantity={item.quantity} isRental={true} />
                     </div>
@@ -240,6 +241,14 @@ export default async function CartPage() {
                 <span className="font-bold text-foreground">Total Amount</span>
                 <span className="text-base font-bold text-primary">Rs. {formatPrice(total)}</span>
               </div>
+
+              <CartAvailabilityAlert 
+                cartItems={cartItems.map((item) => ({
+                  listingId: item.listingId,
+                  quantity: item.quantity,
+                  listing: { title: item.listing.title },
+                }))} 
+              />
 
               <CheckoutButton total={total} />
               <Link

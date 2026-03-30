@@ -12,6 +12,7 @@ const listingUpdateSchema = z.object({
 	originalPrice: z.coerce.number().positive(),
 	price: z.coerce.number().positive(),
 	status: z.boolean(),
+	stockQuantity: z.coerce.number().int().min(1).max(50).optional().default(1),
 }).refine((data) => data.originalPrice >= data.price, {
 	message: "Original price must be greater than or equal to rental price",
 	path: ["originalPrice"],
@@ -70,6 +71,7 @@ export async function PATCH(
 			originalPrice: parsed.data.originalPrice,
 			price: parsed.data.price,
 			status: parsed.data.status,
+			stockQuantity: parsed.data.stockQuantity,
 		} as any,
 		select: {
 			id: true,
@@ -82,6 +84,7 @@ export async function PATCH(
 			originalPrice: true,
 			price: true,
 			status: true,
+			stockQuantity: true,
 			images: true,
 			createdAt: true,
 			updatedAt: true,

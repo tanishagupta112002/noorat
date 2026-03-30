@@ -176,19 +176,6 @@ function uniqueSearchTerms(values: Array<string | null | undefined>) {
   return Array.from(entries.values());
 }
 
-function buildContextTermsFromRentals(rentals: Awaited<ReturnType<typeof getRentals>>) {
-  return uniqueSearchTerms(
-    rentals.flatMap((rental) => [
-      rental.title,
-      rental.category,
-      rental.color || "Assorted",
-      rental.providerName,
-      rental.city,
-      ...extractSizes(rental.size),
-    ]),
-  );
-}
-
 function toArray(value: SearchParamValue) {
   if (!value) return [];
   if (Array.isArray(value)) return value.filter(Boolean);
@@ -712,9 +699,6 @@ export default async function RentalsPage({ searchParams }: PageProps) {
 
   const categoryMenuItems = categoriesForUI.map((category) => {
     const configuredCategory = configuredCategories.find((entry) => normalizeText(entry.label) === normalizeText(category.label));
-    const relatedRentals = sectionScopedRentals.filter((rental) =>
-      categoryMatches(rental.category, category.label, configuredCategory?.aliases),
-    );
 
     return {
       key: category.label,
@@ -723,28 +707,24 @@ export default async function RentalsPage({ searchParams }: PageProps) {
       href: buildToggleHref(currentParams, "category", category.label),
       selected: selectedCategories.some((entry) => normalizeText(entry) === normalizeText(category.label)),
       searchTerms: uniqueSearchTerms([
+        category.label,
         ...(configuredCategory?.aliases ?? []),
-        ...buildContextTermsFromRentals(relatedRentals),
       ]),
     };
   });
 
   const boutiqueMenuItems = boutiqueFilters.map((boutique) => {
-    const relatedRentals = sectionScopedRentals.filter((rental) => normalizeText(rental.providerName) === normalizeText(boutique.label));
-
     return {
       key: boutique.label,
       label: boutique.label,
       count: boutique.count,
       href: buildToggleHref(currentParams, "boutique", boutique.label),
       selected: selectedBoutiques.some((entry) => normalizeText(entry) === normalizeText(boutique.label)),
-      searchTerms: buildContextTermsFromRentals(relatedRentals),
+      searchTerms: uniqueSearchTerms([boutique.label]),
     };
   });
 
   const sizeMenuItems = sizeFilters.map((size) => {
-    const relatedRentals = sectionScopedRentals.filter((rental) => sizeMatches(rental.size, size.label));
-
     return {
       key: size.label,
       label: size.label,
@@ -752,28 +732,24 @@ export default async function RentalsPage({ searchParams }: PageProps) {
       href: buildToggleHref(currentParams, "size", size.label),
       selected: selectedSizes.some((entry) => normalizeText(entry) === normalizeText(size.label)),
       searchTerms: uniqueSearchTerms([
+        size.label,
         ...(SIZE_SMART_ALIASES[size.label] ?? []),
-        ...buildContextTermsFromRentals(relatedRentals),
       ]),
     };
   });
 
   const cityMenuItems = cityFilters.map((city) => {
-    const relatedRentals = sectionScopedRentals.filter((rental) => normalizeText(rental.city || "India") === normalizeText(city.label));
-
     return {
       key: city.label,
       label: city.label,
       count: city.count,
       href: buildToggleHref(currentParams, "city", city.label),
       selected: selectedCities.some((entry) => normalizeText(entry) === normalizeText(city.label)),
-      searchTerms: buildContextTermsFromRentals(relatedRentals),
+      searchTerms: uniqueSearchTerms([city.label]),
     };
   });
 
   const priceMenuItems = priceRanges.map((range) => {
-    const relatedRentals = sectionScopedRentals.filter((item) => item.price >= (resolvePriceRange(range.key)?.min ?? 0) && item.price <= (resolvePriceRange(range.key)?.max ?? Number.POSITIVE_INFINITY));
-
     return {
       key: range.key,
       label: range.label,
@@ -781,15 +757,13 @@ export default async function RentalsPage({ searchParams }: PageProps) {
       href: buildToggleHref(currentParams, "price", range.key),
       selected: selectedPrices.some((entry) => normalizeText(entry) === normalizeText(range.key)),
       searchTerms: uniqueSearchTerms([
+        range.label,
         ...(PRICE_SMART_ALIASES[range.key] ?? []),
-        ...buildContextTermsFromRentals(relatedRentals),
       ]),
     };
   });
 
   const colorMenuItems = colors.map((color) => {
-    const relatedRentals = sectionScopedRentals.filter((rental) => normalizeText(rental.color || "Assorted") === normalizeText(color.label));
-
     return {
       key: color.label,
       label: color.label,
@@ -798,8 +772,8 @@ export default async function RentalsPage({ searchParams }: PageProps) {
       selected: selectedColors.some((entry) => normalizeText(entry) === normalizeText(color.label)),
       swatchClass: color.swatchClass,
       searchTerms: uniqueSearchTerms([
+        color.label,
         ...(COLOR_SMART_ALIASES[color.label] ?? []),
-        ...buildContextTermsFromRentals(relatedRentals),
       ]),
     };
   });

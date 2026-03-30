@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Logo } from "@/components/ui/logo";
 import { useSession } from "@/hooks/user-session";
@@ -15,6 +15,7 @@ import {
   Package,
   Settings,
   ShoppingCart,
+  Store,
   UserRound,
   Mail,
 } from "lucide-react";
@@ -23,6 +24,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const { session } = useSession();
+  const [providerNavItem, setProviderNavItem] = useState<{
+    href: string;
+    label: string;
+  }>({
+    href: "/become-a-provider",
+    label: "Become a Provider",
+  });
 
   const handleLogout = async () => {
     try {
@@ -42,6 +50,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: "/wishlist", label: "My Wishlist", tag: "Account", icon: Heart },
     { href: "/cart", label: "My Cart", tag: "Account", icon: ShoppingCart },
     { href: "/settings", label: "Account Settings", tag: "Payments", icon: Settings },
+    { href: providerNavItem.href, label: providerNavItem.label, tag: "Provider", icon: Store },
   ];
 
   const groupedNav = navItems.reduce<Record<string, typeof navItems>>((groups, item) => {
@@ -67,6 +76,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace("/profile");
     }
   }, [isHubPage, router]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadProviderNav() {
+      if (!session?.user?.id) return;
+
+      try {
+        const res = await fetch("/api/provider/access", { cache: "no-store" });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (isCancelled) return;
+
+        if (data?.canAccessProviderMode) {
+          setProviderNavItem({
+            href: "/provider/dashboard",
+            label: "Provider Dashboard",
+          });
+          return;
+        }
+
+        setProviderNavItem({
+          href: "/become-a-provider",
+          label: "Become a Provider",
+        });
+      } catch (error) {
+        console.error("Failed to load provider access", error);
+      }
+    }
+
+    void loadProviderNav();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [session?.user?.id]);
 
   const sidebarContent = (
     <>

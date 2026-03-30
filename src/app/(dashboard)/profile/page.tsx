@@ -68,7 +68,9 @@ export default function ProfilePage() {
     }
   }, [session, loading, router]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return <p className="text-sm text-muted-foreground">Loading profile...</p>;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({
@@ -109,7 +111,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="mx-auto max-w-4xl space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -119,21 +121,21 @@ export default function ProfilePage() {
         {!editing ? (
           <button 
             onClick={() => setEditing(true)} 
-            className="rounded-sm border border-[#d9d9d9] bg-white px-6 py-2 font-medium text-foreground transition hover:bg-[#fafafa]"
+            className="w-full rounded-sm border border-[#d9d9d9] bg-white px-6 py-2 font-medium text-foreground transition hover:bg-[#fafafa] sm:w-auto"
           >
             Edit Profile
           </button>
         ) : (
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <button
               onClick={saveProfile}
-              className="rounded-sm bg-primary px-6 py-2 font-medium text-primary-foreground transition hover:opacity-90"
+              className="w-full rounded-sm bg-primary px-6 py-2 font-medium text-primary-foreground transition hover:opacity-90 sm:w-auto"
             >
               Save Changes
             </button>
             <button 
               onClick={() => setEditing(false)} 
-              className="rounded-sm border border-[#d9d9d9] px-6 py-2 font-medium text-foreground transition hover:bg-[#fafafa]"
+              className="w-full rounded-sm border border-[#d9d9d9] px-6 py-2 font-medium text-foreground transition hover:bg-[#fafafa] sm:w-auto"
             >
               Cancel
             </button>

@@ -92,8 +92,10 @@ export default function AddStockPage() {
 					return;
 				}
 
-				toast.success(result.message || "Stock added successfully");
+			toast.success("Listing successfully added! 🎉");
+			setTimeout(() => {
 				router.push("/provider/inventory");
+			}, 500);
 				router.refresh();
 			} catch (error) {
 				toast.error(error instanceof Error ? error.message : "An error occurred");

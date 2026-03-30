@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import {
-  DELIVERY_PROMPT_SEEN_KEY,
+  clearAllDeliveryLocationCache,
   getSelectedDeliveryAddress,
   readDeliveryLocationBook,
   type DeliveryLocationBook,
@@ -24,6 +24,7 @@ import {
   upsertAddress,
   writeDeliveryLocationBook,
 } from "@/lib/delivery-location";
+import { useSession } from "@/hooks/user-session";
 
 type GoogleLocationSuggestion = {
   placeId: string;
@@ -102,6 +103,9 @@ function createId() {
 
 export default function DeliveryLocationStrip() {
   const pathname = usePathname();
+  const { session } = useSession();
+  const userId = session?.user?.id;
+  
   const isVisible = pathname === "/" || /^\/rentals\/item\/[^/]+\/?$/.test(pathname);
 
   const [mounted, setMounted] = useState(false);
@@ -118,14 +122,24 @@ export default function DeliveryLocationStrip() {
   const [newAddress, setNewAddress] = useState("");
   const [newPincode, setNewPincode] = useState("");
 
+  const prevUserIdRef = useRef<string | undefined>(undefined);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!isVisible) return;
+    // Clear stale storage when auth identity changes (including anonymous cache)
+    if (mounted && prevUserIdRef.current !== userId) {
+      clearAllDeliveryLocationCache();
+      prevUserIdRef.current = userId;
+    }
+  }, [userId, mounted]);
 
-    const savedBook = readDeliveryLocationBook();
+  useEffect(() => {
+    if (!isVisible || !mounted) return;
+
+    const savedBook = readDeliveryLocationBook(userId);
     setBook(savedBook);
 
     void (async () => {
@@ -145,20 +159,15 @@ export default function DeliveryLocationStrip() {
             addresses: nextAddresses,
           };
 
-          writeDeliveryLocationBook(next);
+          writeDeliveryLocationBook(next, userId);
           return next;
         });
       } catch {
-        // Ignore recommendation fetch failures and keep local behavior.
+        // Ignore recommendation fetch failures
       }
     })();
 
-    const seenPrompt = window.localStorage.getItem(DELIVERY_PROMPT_SEEN_KEY) === "1";
-    if (!seenPrompt) {
-      setDrawerOpen(true);
-      window.localStorage.setItem(DELIVERY_PROMPT_SEEN_KEY, "1");
-    }
-  }, [isVisible]);
+  }, [isVisible, userId, mounted]);
 
   useEffect(() => {
     const q = query.trim();
@@ -215,7 +224,7 @@ export default function DeliveryLocationStrip() {
 
   function persist(next: DeliveryLocationBook) {
     setBook(next);
-    writeDeliveryLocationBook(next);
+    writeDeliveryLocationBook(next, userId);
   }
 
   function selectAddress(id: string) {

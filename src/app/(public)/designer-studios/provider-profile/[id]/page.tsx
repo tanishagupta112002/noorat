@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import { RentalProductCard } from "@/app/(public)/rentals/_components/RentalProductCard";
-import { getRentals, getRentalsByProviderSlug } from "@/app/(public)/rentals/_services/getRentals";
+import { getRentalsByProviderSlug } from "@/app/(public)/rentals/_services/getRentals";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -22,12 +22,6 @@ function formatReviewCount(count: number) {
     return `${(count / 1000).toFixed(1)}k`;
   }
   return String(count);
-}
-
-export async function generateStaticParams() {
-  const rentals = await getRentals();
-  const slugs = [...new Set(rentals.map((item) => item.providerSlug))];
-  return slugs.map((id) => ({ id }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

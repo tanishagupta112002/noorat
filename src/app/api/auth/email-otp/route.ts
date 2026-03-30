@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import * as argon2 from "argon2";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -20,9 +21,17 @@ export async function POST(request: Request) {
        // ✅ STEP 1: check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        accounts: {
+          where: { providerId: "credential" },
+          select: { id: true },
+          take: 1,
+        },
+      },
     });
 
-    if (existingUser) {
+    if (existingUser?.accounts?.length) {
       return NextResponse.json(
         { error: "Email already registered. Please sign in." },
         { status: 400 }
@@ -84,8 +93,20 @@ if (action === "verify") {
       where: { id: verification.id },
     });
 
-    // Try to create user if doesn't exist yet
-    try {
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        accounts: {
+          where: { providerId: "credential" },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
+
+    // Create a brand new account through Better Auth when user doesn't exist.
+    if (!existingUser) {
       await auth.api.signUpEmail({
         body: {
           email,
@@ -93,12 +114,21 @@ if (action === "verify") {
           name,
         },
       });
-      // ^ If successful → user created with emailVerified = false
-    } catch (err: any) {
-      if (!err.message?.includes("already exists")) {
-        throw err; // rethrow unexpected errors
-      }
-      console.log("User already exists, proceeding to verify & sign in");
+    }
+
+    // Repair path: user exists but has no credential account (e.g. social-only or legacy data).
+    if (existingUser && existingUser.accounts.length === 0) {
+      const hashedPassword = await argon2.hash(password);
+
+      await prisma.account.create({
+        data: {
+          id: crypto.randomUUID(),
+          userId: existingUser.id,
+          accountId: email,
+          providerId: "credential",
+          password: hashedPassword,
+        },
+      });
     }
 
     // ─── Critical part ───

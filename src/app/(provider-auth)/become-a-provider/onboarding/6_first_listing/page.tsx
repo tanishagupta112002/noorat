@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { completeFirstListingAction, getOnboardingStatus } from "../_actions/onboarding-actions";
+import { completeFirstListingAction } from "../_actions/onboarding-actions";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   RENTAL_CATEGORY_OPTIONS,
@@ -29,7 +29,7 @@ const schema = z.object({
   price: z.coerce.number().positive("Price must be a positive number"),
   category: z.string().min(1, "Category is required"),
   color: z.string().min(2, "Color is required"),
-  images: z.array(z.instanceof(File)).min(1, "At least 1 image required"),
+  images: z.array(z.instanceof(File)).min(1, "At least 1 image required").max(6, "Maximum 6 images allowed"),
 }).refine((data) => data.originalPrice >= data.price, {
   message: "Original price must be greater than or equal to rental price",
   path: ["originalPrice"],
@@ -56,24 +56,6 @@ export default function FirstListing() {
     },
   });
 
-  useEffect(() => {
-    let active = true;
-
-    async function checkStep() {
-      const { nextStep } = await getOnboardingStatus();
-      if (!active) return;
-      if (nextStep !== "/become-a-provider/onboarding/6_first_listing") {
-        router.replace(nextStep);
-      }
-    }
-
-    void checkStep();
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
-
   const onSubmit = form.handleSubmit(async (data) => {
     try {
       setIsLoading(true);
@@ -91,7 +73,7 @@ export default function FirstListing() {
       const res = await completeFirstListingAction(formData);
       if (res.success) {
         toast.success("Listing published! Your seller account is now active.");
-        router.push("/provider/dashboard");
+        router.replace("/provider/dashboard");
       } else {
         toast.error(res.message || "Failed to publish listing");
       }
@@ -195,19 +177,61 @@ export default function FirstListing() {
             )}
           </div>
           <div>
-            <Label>Images * (at least 1)</Label>
+            <Label>Images * (1-6 photos recommended) </Label>
             <Input
               type="file"
               multiple
               accept="image/*"
-              onChange={(e) => form.setValue("images", Array.from(e.target.files || []), { shouldValidate: true })}
+              onChange={(e) => {
+                const currentImages = form.getValues("images") || [];
+                const newFiles = Array.from(e.target.files || []);
+                const allImages = [...currentImages, ...newFiles];
+                
+                // Limit to max 6 images
+                if (allImages.length > 6) {
+                  toast.error("Maximum 6 images allowed");
+                  return;
+                }
+                
+                form.setValue("images", allImages, { shouldValidate: true });
+                // Reset file input to allow re-selecting same file
+                e.target.value = "";
+              }}
             />
             {form.formState.errors.images && (
               <p className="text-red-500 text-sm mt-1">{form.formState.errors.images.message}</p>
             )}
+            {form.watch("images")?.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <p className="text-green-600 text-sm">
+                  ✓ {form.watch("images").length} image(s) selected
+                </p>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {form.watch("images").map((file, idx) => (
+                    <div key={idx} className="relative group">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${idx + 1}`}
+                        className="w-full h-20 object-cover rounded border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updatedImages = form.getValues("images").filter((_, i) => i !== idx);
+                          form.setValue("images", updatedImages, { shouldValidate: true });
+                        }}
+                        className="absolute top-0 right-0 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Publishing..." : "Publish First Listing & Activate Seller Account"}
+          <Button type="submit" className="w-full px-2" disabled={isLoading}>
+            {isLoading ? "Publishing..." : "Activate your Seller Account"}
           </Button>
         </form>
       </CardContent>

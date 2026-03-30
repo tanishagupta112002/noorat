@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import { CircleDollarSign, Clock3, Package2, TrendingUp } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -17,12 +18,17 @@ function formatCurrency(value: number) {
 	}).format(value);
 }
 
-function formatDate(date: Date) {
+function formatDate(date: Date | string | number) {
+	const normalizedDate = date instanceof Date ? date : new Date(date);
+	if (Number.isNaN(normalizedDate.getTime())) {
+		return "—";
+	}
+
 	return new Intl.DateTimeFormat("en-IN", {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
-	}).format(date);
+	}).format(normalizedDate);
 }
 
 function getOrderBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
@@ -38,26 +44,17 @@ function getOrderBadgeVariant(status: string): "default" | "secondary" | "destru
 	}
 }
 
-export default async function ProviderSalesPage() {
-	const session = await auth.api.getSession({ headers: await headers() });
-
-	if (!session?.user?.id) {
-		redirect("/auth?redirect=/provider/sales");
-	}
-
-	const providerProfile = await prisma.providerProfile.findUnique({
-		where: { userId: session.user.id },
-		select: { id: true },
-	});
-
-	if (!providerProfile) {
-		redirect("/become-a-provider/onboarding");
-	}
-
-	const providerId = providerProfile.id;
-
-	const [totalListings, activeListings, totalOrders, openOrders, grossValue, recentListings, recentOrders] =
-		await Promise.all([
+const getProviderSellsData = unstable_cache(
+	async (providerId: string) => {
+		const [
+			totalListings,
+			activeListings,
+			totalOrders,
+			openOrders,
+			grossValue,
+			recentListings,
+			recentOrders,
+		] = await prisma.$transaction([
 			prisma.listing.count({ where: { providerId } }),
 			prisma.listing.count({ where: { providerId, status: true } }),
 			prisma.order.count({ where: { providerId } }),
@@ -116,7 +113,46 @@ export default async function ProviderSalesPage() {
 			}),
 		]);
 
-	const totalValue = grossValue._sum.total ?? 0;
+		return {
+			totalListings,
+			activeListings,
+			totalOrders,
+			openOrders,
+			totalValue: grossValue._sum.total ?? 0,
+			recentListings,
+			recentOrders,
+		};
+	},
+	["provider-sells-page-data"],
+	{ revalidate: 20 },
+);
+
+export default async function ProviderSalesPage() {
+	const session = await auth.api.getSession({ headers: await headers() });
+
+	if (!session?.user?.id) {
+		redirect("/auth?redirect=/provider/sales");
+	}
+
+	const providerProfile = await prisma.providerProfile.findUnique({
+		where: { userId: session.user.id },
+		select: { id: true },
+	});
+
+	if (!providerProfile) {
+		redirect("/become-a-provider/onboarding");
+	}
+
+	const providerId = providerProfile.id;
+	const {
+		totalListings,
+		activeListings,
+		totalOrders,
+		openOrders,
+		totalValue,
+		recentListings,
+		recentOrders,
+	} = await getProviderSellsData(providerId);
 
 	return (
 		<div className="space-y-6">

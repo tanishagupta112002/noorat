@@ -36,8 +36,12 @@ model User {
   // Profiles
   providerProfile ProviderProfile?
 
+  // Admin-managed delivery hiring
+  createdDeliveryInvites DeliveryPartnerInvite[] @relation("DeliveryInviteCreatedBy")
+
   // Orders
   customerOrders Order[] @relation("CustomerOrders")
+  addresses      CustomerAddress[]
   
   // Wishlist
   wishlists     Wishlist[]
@@ -52,6 +56,105 @@ enum Role {
   CUSTOMER
   PROVIDER
   ADMIN
+}
+
+model CustomerAddress {
+  id          String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String?
+  name         String?
+  addressLine  String
+  city         String?
+  state        String?
+  pincode      String
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model DeliveryPartnerInvite {
+  id               String   @id @default(uuid())
+  email            String
+  fullName         String
+  phone            String?
+  tokenHash        String   @unique
+  expiresAt        DateTime
+  usedAt           DateTime?
+  createdByAdminId String
+  createdByAdmin   User     @relation("DeliveryInviteCreatedBy", fields: [createdByAdminId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@index([email, expiresAt])
+}
+
+model DeliveryPartnerProfile {
+  id            String                @id @default(uuid())
+  email         String                @unique
+  fullName      String
+  passwordHash  String
+  employeeCode  String                @unique
+  phone         String?
+  city          String?
+  pincode       String?
+  vehicleNumber String?
+  status        DeliveryPartnerStatus @default(ACTIVE)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  tasks         DeliveryTask[]
+  sessions      DeliveryPartnerSession[]
+
+  @@index([status])
+}
+
+model DeliveryPartnerSession {
+  id                String               @id @default(uuid())
+  token             String               @unique
+  deliveryPartnerId String
+  deliveryPartner   DeliveryPartnerProfile @relation(fields: [deliveryPartnerId], references: [id], onDelete: Cascade)
+  expiresAt         DateTime
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([deliveryPartnerId])
+  @@index([expiresAt])
+}
+
+enum DeliveryPartnerStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model DeliveryTask {
+  id                    String                @id @default(uuid())
+  orderId               String                @unique
+  order                 Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  deliveryPartnerId     String
+  deliveryPartner       DeliveryPartnerProfile @relation(fields: [deliveryPartnerId], references: [id], onDelete: Cascade)
+  stage                 DeliveryTaskStage     @default(ASSIGNED)
+  pickupProofImage      String?
+  deliveryProofImage    String?
+  returnPickupProofImage String?
+  providerDropProofImage String?
+  notes                 String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([deliveryPartnerId, stage])
+}
+
+enum DeliveryTaskStage {
+  ASSIGNED
+  PICKED_UP_FROM_PROVIDER
+  DELIVERED_TO_CUSTOMER
+  PICKED_UP_FROM_CUSTOMER
+  DELIVERED_TO_PROVIDER
+  CLOSED
 }
 
 model ProviderProfile {
@@ -115,6 +218,7 @@ model Listing {
   color       String   @default("Assorted")
 
   status      Boolean  @default(true)
+  stockQuantity Int     @default(1)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -123,6 +227,9 @@ model Listing {
   orders      Order[]  @relation("ListingOrders")
   wishlists   Wishlist[]
   cartItems   CartItem[]
+
+  @@index([providerId])
+  @@index([status, createdAt])
 }
 
 model ListingReview {
@@ -141,6 +248,7 @@ model ListingReview {
   updatedAt     DateTime @updatedAt
 
   @@index([listingId])
+  @@index([listingId, reviewerEmail])
 }
 
 model Order {
@@ -160,16 +268,46 @@ model Order {
 
   status      OrderStatus @default(PENDING)
 
+  deliveryName        String?
+  deliveryAddressLine String?
+  deliveryCity        String?
+  deliveryState       String?
+  deliveryPincode     String?
+
+  // Rental lifecycle dates (set at order creation, updated as status changes)
+  rentalStartDate    DateTime?  // Expected delivery date = createdAt + 7 days
+  rentalEndDate      DateTime?  // rentalStartDate + 3 days (end of rental period)
+  expectedReturnDate DateTime?  // rentalEndDate + 5 days (return + inspection + ready again)
+
+  // Real-time milestone timestamps (updated when actors change status/stage)
+  acceptedAt            DateTime?
+  shippedAt             DateTime?
+  pickedUpFromProviderAt DateTime?
+  deliveredToCustomerAt DateTime?
+  pickedUpFromCustomerAt DateTime?
+  returnedToProviderAt  DateTime?
+  completedAt           DateTime?
+  cancelledAt           DateTime?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  deliveryTask DeliveryTask?
+
+  @@index([providerId, createdAt])
+  @@index([providerId, status, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 enum OrderStatus {
-  PENDING
-  ACCEPTED
-  SHIPPED
-  COMPLETED
-  CANCELLED
+  PENDING        // Order placed, awaiting provider confirmation
+  ACCEPTED       // Provider confirmed, preparing dispatch
+  SHIPPED        // Item dispatched to customer (7-day delivery window)
+  WITH_CUSTOMER  // Customer received item, 3-day rental period active
+  RETURNED       // Item returned to provider, verifying condition
+  COMPLETED      // Full cycle done, security deposit released
+  CANCELLED      // Order cancelled
 }
 
 model Account {

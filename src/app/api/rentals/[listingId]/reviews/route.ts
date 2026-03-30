@@ -1,8 +1,18 @@
+import { headers } from "next/headers";
+
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { put } from "@vercel/blob";
 
-const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+];
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
 function getBlobTokenOrThrow(): string {
   const token =
@@ -25,24 +35,27 @@ function sanitizeName(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
 
-async function saveReviewImage(listingId: string, image: File) {
-  if (!ALLOWED_MIME_TYPES.includes(image.type)) {
-    throw new Error("Only JPG, PNG, and WEBP images are allowed");
+async function saveReviewMedia(listingId: string, media: File) {
+  if (!ALLOWED_MIME_TYPES.includes(media.type)) {
+    throw new Error("Only JPG, PNG, WEBP, MP4, WEBM, and MOV files are allowed");
   }
 
-  if (image.size > MAX_FILE_SIZE) {
-    throw new Error("Review image must be smaller than 5MB");
+  if (media.size > MAX_FILE_SIZE) {
+    throw new Error("Review media must be smaller than 25MB");
   }
 
   const extByMime: Record<string, string> = {
     "image/jpeg": ".jpg",
     "image/png": ".png",
     "image/webp": ".webp",
+    "video/mp4": ".mp4",
+    "video/webm": ".webm",
+    "video/quicktime": ".mov",
   };
-  const extension = extByMime[image.type] || ".jpg";
+  const extension = extByMime[media.type] || ".bin";
 
   const fileName = `reviews/${listingId}-${Date.now()}${extension}`;
-  const blob = await put(fileName, image, {
+  const blob = await put(fileName, media, {
     access: "public",
     token: getBlobTokenOrThrow(),
   });
@@ -82,6 +95,13 @@ export async function POST(
   context: { params: Promise<{ listingId: string }> },
 ) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return Response.json({ success: false, error: "Please sign in to submit a review" }, { status: 401 });
+    }
+
     const { listingId } = await context.params;
 
     const listing = await prisma.listing.findUnique({
@@ -99,7 +119,15 @@ export async function POST(
     const title = sanitizeName((formData.get("title") as string | null) || "");
     const comment = sanitizeName((formData.get("comment") as string | null) || "");
     const rating = Number(formData.get("rating"));
-    const image = formData.get("image");
+    const orderId = sanitizeName((formData.get("orderId") as string | null) || "");
+    const media = formData.get("media") || formData.get("image");
+
+    if (!orderId) {
+      return Response.json(
+        { success: false, error: "Delivered order is required to submit a review" },
+        { status: 400 },
+      );
+    }
 
     if (!name || !comment) {
       return Response.json(
@@ -115,16 +143,78 @@ export async function POST(
       );
     }
 
+    const eligibleOrder = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        userId,
+        listingId,
+        OR: [
+          {
+            status: { in: ["WITH_CUSTOMER", "RETURNED", "COMPLETED"] },
+          },
+          {
+            status: "SHIPPED",
+            deliveryTask: {
+              is: {
+                stage: "DELIVERED_TO_CUSTOMER",
+              },
+            },
+          },
+          {
+            status: "CANCELLED",
+            deliveryTask: {
+              is: {
+                stage: "CLOSED",
+                notes: {
+                  contains: "Customer declined order at doorstep.",
+                },
+              },
+            },
+          },
+        ],
+      },
+      select: { id: true, createdAt: true },
+    });
+
+    if (!eligibleOrder) {
+      return Response.json(
+        { success: false, error: "You can review after rider reaches your doorstep or doorstep decline" },
+        { status: 403 },
+      );
+    }
+
+    const normalizedEmail = (email || session.user.email || "").trim() || null;
+
+    if (normalizedEmail) {
+      const existingReview = await prisma.listingReview.findFirst({
+        where: {
+          listingId,
+          reviewerEmail: normalizedEmail,
+          createdAt: {
+            gte: eligibleOrder.createdAt,
+          },
+        },
+        select: { id: true },
+      });
+
+      if (existingReview) {
+        return Response.json(
+          { success: false, error: "You already submitted a review for this item" },
+          { status: 409 },
+        );
+      }
+    }
+
     let imageUrl: string | null = null;
-    if (image instanceof File && image.size > 0) {
-      imageUrl = await saveReviewImage(listingId, image);
+    if (media instanceof File && media.size > 0) {
+      imageUrl = await saveReviewMedia(listingId, media);
     }
 
     const review = await prisma.listingReview.create({
       data: {
         listingId,
         reviewerName: name,
-        reviewerEmail: email,
+        reviewerEmail: normalizedEmail,
         rating,
         title: title || null,
         comment,

@@ -116,6 +116,7 @@ function AuthPageContent() {
         otp: data.otp,
         password: initialData.password,
         name: initialData.name || "",
+        role: initialData.role,
       });
 
       if (result.error) {

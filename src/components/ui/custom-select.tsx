@@ -126,8 +126,13 @@ export const CustomSelect = forwardRef<HTMLSelectElement, CustomSelectProps>(
           >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
-          <SelectContent side="bottom" position="popper" avoidCollisions={false} className="max-h-52 overflow-y-auto">
-            <SelectItem value={EMPTY_SENTINEL} disabled className="hidden">
+          <SelectContent
+            side="bottom"
+            position="popper"
+            avoidCollisions={false}
+            className="z-12000 max-h-56 overflow-y-auto border-border bg-white shadow-2xl"
+          >
+            <SelectItem value={EMPTY_SENTINEL} disabled className="text-muted-foreground">
               {placeholder}
             </SelectItem>
             {selectableOptions.map((option) => (

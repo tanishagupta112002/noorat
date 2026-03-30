@@ -38,9 +38,17 @@ const MOBILE_OTP_IDENTIFIER_PREFIX = "provider-mobile-otp";
 const OTP_LENGTH = 6;
 const OTP_EXPIRY_MINUTES = 10;
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
+const OTP_DEBUG_FALLBACK_ENABLED = process.env.OTP_DEBUG_FALLBACK === "true";
 
 const mobileSchema = z.string().regex(/^\+91[6-9]\d{9}$/, "Invalid Indian mobile number");
 const otpCodeSchema = z.string().regex(/^\d{6}$/, "Invalid OTP");
+
+// Helper to generate OTP code
+function generateOTP(): string {
+  const min = 10 ** (OTP_LENGTH - 1);
+  const max = 10 ** OTP_LENGTH;
+  return crypto.randomInt(min, max).toString();
+}
 
 const STEP_PATHS = {
   step1: "/become-a-provider/onboarding/1_mobile_verification",
@@ -77,17 +85,6 @@ function ensureExpectedStep(
 
 function buildOtpIdentifier(userId: string, phone: string): string {
   return `${MOBILE_OTP_IDENTIFIER_PREFIX}:${userId}:${phone}`;
-}
-
-function generateOtpCode(): string {
-  const min = 10 ** (OTP_LENGTH - 1);
-  const max = 10 ** OTP_LENGTH;
-  return crypto.randomInt(min, max).toString();
-}
-
-function hashOtpCode(phone: string, otp: string): string {
-  const secret = process.env.MOBILE_OTP_SECRET ?? "dev-mobile-otp-secret";
-  return crypto.createHash("sha256").update(`${phone}:${otp}:${secret}`).digest("hex");
 }
 
 async function sendSmsOtp(phone: string, otp: string): Promise<ActionResponse> {
@@ -360,11 +357,6 @@ export async function sendMobileOtpAction(phone: string): Promise<ActionResponse
       return { success: false, message: "Mobile already verified" };
     }
 
-    const isTwilioVerifyMode = Boolean(process.env.TWILIO_VERIFY_SERVICE_SID);
-    if (isTwilioVerifyMode) {
-      return await sendSmsOtp(normalizedPhone, generateOtpCode());
-    }
-
     const identifier = buildOtpIdentifier(userId, normalizedPhone);
     const latestOtp = await prisma.verification.findFirst({
       where: { identifier },
@@ -383,20 +375,8 @@ export async function sendMobileOtpAction(phone: string): Promise<ActionResponse
       }
     }
 
-    const otp = generateOtpCode();
-    const otpHash = hashOtpCode(normalizedPhone, otp);
-
-    await prisma.verification.deleteMany({ where: { identifier } });
-    await prisma.verification.create({
-      data: {
-        id: crypto.randomUUID(),
-        identifier,
-        value: otpHash,
-        expiresAt: new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000),
-      },
-    });
-
-    return await sendSmsOtp(normalizedPhone, otp);
+    // Use Twilio Verify to send OTP
+    return await sendSmsOtp(normalizedPhone, generateOTP());
   } catch (err) {
     if (err instanceof z.ZodError) {
       return {
@@ -430,35 +410,14 @@ export async function verifyMobileOtpAction({
       if (stepGuard) return stepGuard;
     }
 
-    const isTwilioVerifyMode = Boolean(process.env.TWILIO_VERIFY_SERVICE_SID);
-    if (isTwilioVerifyMode) {
-      const twilioResult = await verifyOtpViaTwilioVerify(normalizedPhone, normalizedOtp);
-      if (!twilioResult.success) return twilioResult;
-    } else {
-      const identifier = buildOtpIdentifier(userId, normalizedPhone);
-      const verification = await prisma.verification.findFirst({
-        where: {
-          identifier,
-          expiresAt: { gt: new Date() },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      if (!verification) {
-        return { success: false, message: "OTP expired. Please request a new one." };
-      }
-
-      const expectedHash = hashOtpCode(normalizedPhone, normalizedOtp);
-      if (verification.value !== expectedHash) {
-        return { success: false, message: "Invalid OTP" };
-      }
-
-      await prisma.verification.deleteMany({ where: { identifier } });
-    }
+    // Verify using Twilio Verify
+    const twilioVerifyResult = await verifyOtpViaTwilioVerify(normalizedPhone, normalizedOtp);
+    if (!twilioVerifyResult.success) return twilioVerifyResult;
 
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) return { success: false, message: "Unauthorized" };
 
+    // Mark mobile as verified
     await prisma.providerProfile.upsert({
       where: { userId: session.user.id },
       create: {
@@ -484,6 +443,9 @@ export async function verifyMobileOtpAction({
     return { success: false, message: "Something went wrong" };
   }
 }
+
+// All OTP verification is handled by Twilio Verify
+// Firebase phone auth is no longer supported
 
 // ─────────────────────────────────────────────
 // Step 2: Identity
@@ -545,7 +507,7 @@ export async function submitIdentityAction(formData: FormData): Promise<ActionRe
 
         const fileName = `provider-identity/${profile.userId}-${Date.now()}${extension}`;
         const blob = await put(fileName, idDocumentEntry, {
-          access: "private",
+          access: "public",
           token: getBlobTokenOrThrow(),
         });
         savedIdDocument = blob.url;

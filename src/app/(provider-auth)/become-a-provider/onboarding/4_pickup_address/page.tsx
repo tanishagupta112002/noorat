@@ -10,9 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import { submitPickupAddressAction, getOnboardingStatus } from "../_actions/onboarding-actions";
+import { submitPickupAddressAction } from "../_actions/onboarding-actions";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RENTAL_CITY_OPTIONS } from "@/lib/rental-listing-options";
 
 const schema = z.object({
@@ -28,24 +28,6 @@ export default function PickupAddress() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    async function checkStep() {
-      const { nextStep } = await getOnboardingStatus();
-      if (!active) return;
-      if (nextStep !== "/become-a-provider/onboarding/4_pickup_address") {
-        router.replace(nextStep);
-      }
-    }
-
-    void checkStep();
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),

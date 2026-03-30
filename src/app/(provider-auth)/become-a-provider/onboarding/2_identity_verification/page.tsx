@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { submitIdentityAction, getOnboardingStatus } from "../_actions/onboarding-actions";
+import { useState } from "react";
+import { submitIdentityAction } from "../_actions/onboarding-actions";
 import { Loader2 } from "lucide-react";
 
 const schema = z.object({
@@ -31,24 +31,6 @@ export default function IdentityVerification() {
       gstNumber: "",
     },
   });
-
-  useEffect(() => {
-    let active = true;
-
-    async function checkStep() {
-      const { nextStep } = await getOnboardingStatus();
-      if (!active) return;
-      if (nextStep !== "/become-a-provider/onboarding/2_identity_verification") {
-        router.replace(nextStep);
-      }
-    }
-
-    void checkStep();
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   const onSubmit = form.handleSubmit(async (data) => {
     setLoading(true);

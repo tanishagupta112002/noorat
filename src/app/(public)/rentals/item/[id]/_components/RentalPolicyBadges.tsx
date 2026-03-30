@@ -161,8 +161,8 @@ const policies: PolicyDefinition[] = [
       {
         title: "At doorstep",
         items: [
-          "If the outfit doesn't meet expectations, accept it from the delivery partner.",
-          "Inform the delivery boy immediately that you want to cancel.",
+          "Check the outfit at doorstep, then accept or decline in My Orders.",
+          "If declined immediately at doorstep, you get a full refund.",
           "You'll get a full refund - the delivery boy will collect the outfit.",
           "No refund without returning the outfit to the delivery boy at the time of delivery.",
         ],
