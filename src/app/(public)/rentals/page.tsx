@@ -303,6 +303,23 @@ function formatCompact(value: number) {
   return String(value);
 }
 
+function toTimestamp(value: Date | string | number | null | undefined): number {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+}
+
 function getColorSwatchClass(color: string) {
   const swatches: Record<string, string> = {
     "Multi Color": "bg-gradient-to-r from-red-500 via-yellow-400 to-blue-500",
@@ -764,7 +781,7 @@ export default async function RentalsPage({ searchParams }: PageProps) {
     })
     .sort((a, b) => {
       if (selectedSort === "What's New") {
-        return b.createdAt.getTime() - a.createdAt.getTime();
+        return toTimestamp(b.createdAt) - toTimestamp(a.createdAt);
       }
       if (selectedSort === "Popularity") {
         return b.reviewCount - a.reviewCount;
@@ -776,7 +793,7 @@ export default async function RentalsPage({ searchParams }: PageProps) {
         if (b.reviewCount !== a.reviewCount) {
           return b.reviewCount - a.reviewCount;
         }
-        return b.createdAt.getTime() - a.createdAt.getTime();
+        return toTimestamp(b.createdAt) - toTimestamp(a.createdAt);
       }
       if (selectedSort === "Price: Low to High") {
         return a.price - b.price;
