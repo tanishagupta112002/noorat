@@ -87,7 +87,7 @@ function FilterColumn({
               type="checkbox"
               readOnly
               checked={item.selected}
-              className="h-4 w-4 shrink-0 rounded border-border bg-background accent-primary shadow-sm"
+              className="pointer-events-none h-4 w-4 shrink-0 rounded border-border bg-background accent-primary shadow-sm"
             />
           </Link>
         ))}

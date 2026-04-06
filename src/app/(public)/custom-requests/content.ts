@@ -34,7 +34,7 @@ export const customRequestPages: Record<string, PublicPageContent> = {
       title: "Want to compare custom against ready-to-rent first?",
       description: "Open categories and nearby designer pages side by side. If the inventory is close enough, rent. If it is not, use custom requests with clearer references.",
       primary: { label: "Browse categories", href: "/categories" },
-      secondary: { label: "Find nearby designers", href: "/nearby-designers" },
+      secondary: { label: "Find nearby designers", href: "/designer-studios/nearby" },
     },
   },
   "how-it-works": {
@@ -70,7 +70,7 @@ export const customRequestPages: Record<string, PublicPageContent> = {
     eyebrow: "Custom Requests",
     title: "Pricing and Timelines for AI-Led Custom Outfit Requests",
     description:
-      "This page sets customer expectations before they commit. Exact quotes depend on fabric, work level and provider, but the route should still feel transparent instead of vague.",
+      "This page sets customer expectations before they commit. Exact quotes depend on design complexity, work level and provider, but the route should still feel transparent instead of vague.",
     badges: ["Clear expectations", "Timeline awareness"],
     stats: [
       { value: "Low", label: "Simple edits and light styling cost less" },
@@ -83,7 +83,7 @@ export const customRequestPages: Record<string, PublicPageContent> = {
     cardsTitle: "What usually changes the quote",
     cards: [
       { eyebrow: "Design complexity", title: "Silhouette and fit work", description: "Structured cuts, multi-piece sets and exact recreation requests need more time than simpler edits." },
-      { eyebrow: "Material", title: "Fabric and embellishment", description: "Base fabric, lining, embroidery and finishing decisions shift the quote quickly." },
+      { eyebrow: "Detailing", title: "Embellishment and finishing", description: "Embroidery density, lining needs and finishing details can shift the quote quickly." },
       { eyebrow: "Timeline", title: "Urgency and event date", description: "Rush timelines usually reduce options and can increase the cost or narrow provider availability." },
     ],
     columnsTitle: "Customer planning guide",

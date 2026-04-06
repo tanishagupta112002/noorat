@@ -36,13 +36,19 @@ export const NAV_ITEMS: NavItem[] = [
       {
         label: "Western Wear",
         href: "/rentals/western",
-        description: "Western wear, dresses, celebrity looks, date looks and cocktail edits",
+        description: "Western wear edits including dresses, gowns and celebrity styles",
         children: [
           { label: "Dresses", href: "/rentals/western/dresses" },
+          { label: "Frock Dresses", href: "/rentals/western/frock-dresses" },
+          { label: "Bodycon Dresses", href: "/rentals/western/bodycon-dresses" },
+          { label: "Gowns", href: "/rentals/western/gowns" },
+          { label: "Slit Gowns", href: "/rentals/western/slit-gowns" },
+          { label: "Cape Gowns", href: "/rentals/western/cape-gowns" },
+          { label: "Western Saree Dresses", href: "/rentals/western/western-saree-dresses" },
+          { label: "Maxi Dresses", href: "/rentals/western/maxi-dresses" },
+          { label: "Mini Dresses", href: "/rentals/western/mini-dresses" },
+          { label: "Mermaid Gowns", href: "/rentals/western/mermaid-gowns" },
           { label: "Celebrity Styles", href: "/rentals/celebrity-styles" },
-          { label: "Date Specials", href: "/rentals/date-specials" },
-          { label: "Birthday Specials", href: "/rentals/birthday-specials" },
-          { label: "Cocktail Party", href: "/rentals/cocktail-party" },
         ],
       },
       {
@@ -60,7 +66,6 @@ export const NAV_ITEMS: NavItem[] = [
           { label: "Heavy Gowns", href: "/rentals/ethnic/heavy-gowns" },
           { label: "Mehndi Outfits", href: "/rentals/ethnic/mehndi-outfits" },
           { label: "Haldi Outfits", href: "/rentals/ethnic/haldi-outfits" },
-          { label: "Rajasthani Poshak", href: "/rentals/ethnic/rajasthani-poshak" },
         ],
       },
       {
@@ -93,25 +98,7 @@ export const NAV_ITEMS: NavItem[] = [
             href: "/rentals/bridal/sangeet-outfits",
           },
           { label: "Bridal Sarees", href: "/rentals/bridal/bridal-sarees" },
-          { label: "Poshak", href: "/rentals/bridal/poshak" },
-        ],
-      },
-      {
-        label: "Party Wear",
-        href: "/rentals/party-wear",
-        description: "Party wear, casual outfits, tops, jumpsuits, skirts, shorts and co-ords",
-        children: [
-          {
-            label: "Party Wear",
-            href: "/rentals/party-wear",
-            badge: "Trending",
-          },
-          { label: "Casual Outfits", href: "/rentals/casual" },
-          { label: "Tops & Blouses", href: "/rentals/party-wear/tops" },
-          { label: "Jumpsuits", href: "/rentals/party-wear/jumpsuits" },
-          { label: "Skirts", href: "/rentals/party-wear/skirts" },
-          { label: "Shorts", href: "/rentals/party-wear/shorts" },
-          { label: "Co-ord Sets", href: "/rentals/party-wear/co-ord-sets" },
+          { label: "Rajasthani Poshak", href: "/rentals/bridal/poshak" },
         ],
       },
     ],
@@ -152,24 +139,24 @@ export const NAV_ITEMS: NavItem[] = [
       },
       {
         label: "Nearby Designer Studios",
-        href: "/nearby-designers",
+        href: "/designer-studios/nearby",
         description:
           "Find top lehenga & saree rental boutiques near your location",
       },
       {
         label: "Top Rated Boutiques",
-        href: "/nearby-designers/top-rated",
+        href: "/designer-studios/top-rated",
         badge: "Popular",
         description: "Highly rated designer rental stores",
       },
       {
         label: "Bridal Rental Specialists",
-        href: "/nearby-designers/bridal",
+        href: "/designer-studios/bridal",
         description: "Best boutiques for bridal lehenga rentals",
       },
       {
         label: "Budget Friendly Rentals",
-        href: "/nearby-designers/budget",
+        href: "/designer-studios/budget",
         description: "Affordable designer outfit rentals near you",
       },
     ],
@@ -229,13 +216,20 @@ export const NAV_ITEMS: NavItem[] = [
 }
 ];
 
-// Simple active check (tum chaho to isko aur improve kar sakte ho search params ke saath)
+// Check if EXACTLY on this item's page (not children)
 export function isActiveNavItem(
   pathname: string,
   item: Pick<NavItem, "href" | "children">,
 ): boolean {
-  if (pathname === item.href || pathname.startsWith(`${item.href}/`))
-    return true;
+  // Only highlight parent if EXACTLY on its page
+  return pathname === item.href;
+}
+
+// Check if any child is active (for auto-opening dropdowns)
+export function hasActiveChild(
+  pathname: string,
+  item: Pick<NavItem, "href" | "children">,
+): boolean {
   return (
     item.children?.some(
       (child) =>

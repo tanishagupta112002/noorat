@@ -26,7 +26,7 @@ export async function GET() {
     return Response.json({
       authenticated: true,
       canAccessProviderMode: false,
-      providerHref: "/become-a-provider/onboarding",
+      providerHref: "/become-a-provider/onboarding/1_mobile_verification",
     });
   }
 

@@ -59,6 +59,12 @@ const STEP_PATHS = {
   step6: "/become-a-provider/onboarding/6_first_listing",
 } as const;
 
+const storeDetailsSchema = z.object({
+  businessName: z.string().min(3, "Business name must be at least 3 characters"),
+  providerType: z.enum(["BOUTIQUE", "RENTAL"]),
+  description: z.string().optional(),
+});
+
 type ProfileStepStatus = {
   stepMobileVerified: boolean;
   stepIdentityVerified: boolean;
@@ -546,21 +552,35 @@ export async function submitStoreDetailsAction(data: {
 }): Promise<ActionResponse> {
   try {
     const { profile } = await getCurrentProviderProfile();
-    const stepGuard = ensureExpectedStep(profile, STEP_PATHS.step3);
-    if (stepGuard) return stepGuard;
+    const normalized = storeDetailsSchema.parse(data);
+
+    // Allow editing store details even after completing step 3.
+    // Only block when the provider hasn't reached step 3 yet.
+    if (!profile.stepStoreDetails) {
+      const stepGuard = ensureExpectedStep(profile, STEP_PATHS.step3);
+      if (stepGuard) return stepGuard;
+    }
 
     await prisma.providerProfile.update({
       where: { id: profile.id },
       data: {
-        businessName: data.businessName,
-        providerType: data.providerType,
-        description: data.description,
+        businessName: normalized.businessName,
+        providerType: normalized.providerType,
+        description: normalized.description,
         stepStoreDetails: true,
       },
     });
 
     return { success: true, message: "Store details saved" };
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      return { success: false, message: err.issues[0]?.message || "Invalid store details" };
+    }
+
+    if (err instanceof Error) {
+      return { success: false, message: err.message };
+    }
+
     return { success: false, message: "Failed to save store details" };
   }
 }
@@ -647,7 +667,6 @@ export async function submitBankDetailsAction(
 // ─────────────────────────────────────────────
 const listingSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
-  fabric: z.string().min(2, "Fabric must be at least 2 characters"),
   description: z.string().max(2000).optional(),
   size: z.string().min(1, "Size is required"),
   originalPrice: z.coerce.number().positive("Original price must be a positive number"),
@@ -702,7 +721,6 @@ export async function completeFirstListingAction(formData: FormData): Promise<Ac
 
     const data = {
       title: formData.get("title") as string,
-      fabric: formData.get("fabric") as string,
       description: (formData.get("description") as string) || "",
       size: formData.get("size") as string,
       originalPrice: formData.get("originalPrice") as string,
@@ -727,7 +745,6 @@ export async function completeFirstListingAction(formData: FormData): Promise<Ac
         data: {
           providerId: profile.id,
           title: validated.title,
-          Fabric: validated.fabric,
           description: validated.description?.trim() || null,
           size: validated.size,
           originalPrice: validated.originalPrice,

@@ -21,9 +21,14 @@ export function WishlistHeartButton({
 }: WishlistHeartButtonProps) {
   const router = useRouter();
   const { session, loading } = useSession();
+  const [hasMounted, setHasMounted] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -86,12 +91,14 @@ export function WishlistHeartButton({
         : "border-border text-foreground/70 hover:text-rose-500"
     }`;
 
+  const isDisabled = isLoading || (hasMounted && loading);
+
   return (
     <div className={containerClassName || "relative"}>
       <button
         type="button"
         onClick={handleWishlistToggle}
-        disabled={isLoading || loading}
+        disabled={isDisabled}
         aria-label={isAdded ? "Remove from favourites" : "Add to favourites"}
         className={buttonClassName}
       >

@@ -16,7 +16,7 @@ export const content: PublicPageContent = {
     { value: "Practical", label: "Support tied to next-step decisions" },
   ],
   primaryCta: { label: "Read the FAQs", href: "/faq" },
-  secondaryCta: { label: "Explore nearby designers", href: "/nearby-designers" },
+  secondaryCta: { label: "Explore nearby designers", href: "/designer-studios/nearby" },
   cardsTitle: "Best reasons to contact support",
   cards: [
     { eyebrow: "Fit", title: "You are unsure about sizing", description: "Use support when the event is important and the silhouette feels measurement-sensitive." },

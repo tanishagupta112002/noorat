@@ -1,0 +1,2 @@
+ALTER TABLE "Listing"
+DROP COLUMN "Fabric";

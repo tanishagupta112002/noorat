@@ -11,22 +11,19 @@ const slides = [
     title: "Find Designers Near You",
     subtitle: "Discover local boutiques for lehengas & dresses.",
     image: "/images/hero/i1.png",
-    primary: { label: "Explore Designers", href: "/nearby-designers" },
-    secondary: { label: "Top Rated", href: "/nearby-designers/top-rated" },
+    primary: { label: "Explore Designers", href: "/designer-studios" },
   },
   {
     title: "Rent Designer Outfits",
     subtitle: "Luxury looks without the luxury price.",
     image: "/images/hero/i2.png",
-    primary: { label: "Browse Rentals", href: "/categories" },
-    secondary: { label: "View Categories", href: "/categories" },
+    primary: { label: "Browse Rentals", href: "/rentals" },
   },
   {
     title: "Design Your Dream Outfit",
     subtitle: "Use AI to create your perfect fashion piece.",
     image: "/images/hero/i3.png",
     primary: { label: "Try AI Design", href: "/custom-requests" },
-    secondary: { label: "How It Works", href: "/custom-requests/how-it-works" },
   },
 ];
 

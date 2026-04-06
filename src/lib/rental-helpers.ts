@@ -82,21 +82,3 @@ export function getDaysUntilDate(targetDate: Date, fromDate: Date = new Date()):
   return Math.max(0, diff);
 }
 
-/**
- * Format a date for display in error messages
- */
-export function formatAvailabilityDate(date: Date): string {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const target = new Date(date);
-  target.setHours(0, 0, 0, 0);
-  
-  const daysFromNow = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  
-  if (daysFromNow === 0) return "today";
-  if (daysFromNow === 1) return "tomorrow";
-  if (daysFromNow > 1) return `in ${daysFromNow} days`;
-  
-  return date.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
-}

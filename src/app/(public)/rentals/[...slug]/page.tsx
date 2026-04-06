@@ -13,12 +13,18 @@ type SubpageConfig = {
 
 const SUBPAGE_CATEGORY_LABELS: Record<string, SubpageConfig> = {
   western: { categoryLabel: "Western Wear", section: "western" },
-  "western-wear": { categoryLabel: "Western Wear", section: "western" },
   "western/dresses": { categoryLabel: "Dresses", section: "western" },
+  "western/frock-dresses": { categoryLabel: "Frock Dresses", section: "western" },
+  "western/bodycon-dresses": { categoryLabel: "Bodycon Dresses", section: "western" },
+  "western/gowns": { categoryLabel: "Gowns", section: "western" },
+  "western/slit-gowns": { categoryLabel: "Slit Gowns", section: "western" },
+  "western/cape-gowns": { categoryLabel: "Cape Gowns", section: "western" },
+  "western/western-saree-dresses": { categoryLabel: "Western Saree Dresses", section: "western" },
+  "western/maxi-dresses": { categoryLabel: "Maxi Dresses", section: "western" },
+  "western/mini-dresses": { categoryLabel: "Mini Dresses", section: "western" },
+  "western/mermaid-gowns": { categoryLabel: "Mermaid Gowns", section: "western" },
   "celebrity-styles": { categoryLabel: "Celebrity Styles", section: "western" },
-  "date-specials": { categoryLabel: "Date Specials", section: "western" },
-  "birthday-specials": { categoryLabel: "Birthday Specials", section: "western" },
-  "cocktail-party": { categoryLabel: "Cocktail Party", section: "western" },
+  
 
   ethnic: { categoryLabel: "Traditional Wear", section: "ethnic" },
   traditional: { categoryLabel: "Traditional Wear", section: "ethnic" },
@@ -33,7 +39,6 @@ const SUBPAGE_CATEGORY_LABELS: Record<string, SubpageConfig> = {
   "ethnic/heavy-gowns": { categoryLabel: "Heavy Gowns", section: "ethnic" },
   "ethnic/mehndi-outfits": { categoryLabel: "Mehndi Outfits", section: "ethnic" },
   "ethnic/haldi-outfits": { categoryLabel: "Haldi Outfits", section: "ethnic" },
-  "ethnic/rajasthani-poshak": { categoryLabel: "Rajasthani Poshak", section: "ethnic" },
 
   bridal: { categoryLabel: "Bridal Specials", section: "bridal" },
   "bridal-special": { categoryLabel: "Bridal Specials", section: "bridal" },
@@ -47,17 +52,7 @@ const SUBPAGE_CATEGORY_LABELS: Record<string, SubpageConfig> = {
   "bridal/bridal-sarees": { categoryLabel: "Bridal Sarees", section: "bridal" },
   "bridal/poshak": { categoryLabel: "Rajasthani Poshak", section: "bridal" },
 
-  "party-wear": { categoryLabel: "Party Wear", section: "party-wear" },
-  partywear: { categoryLabel: "Party Wear", section: "party-wear" },
-  casual: { categoryLabel: "Casual Outfits", section: "party-wear" },
-  "party-wear/tops": { categoryLabel: "Tops & Blouses", section: "party-wear" },
-  "party-wear/jumpsuits": { categoryLabel: "Jumpsuits", section: "party-wear" },
-  "party-wear/skirts": { categoryLabel: "Skirts", section: "party-wear" },
-  "party-wear/shorts": { categoryLabel: "Shorts", section: "party-wear" },
-  "party-wear/co-ord-sets": { categoryLabel: "Co-ord Sets", section: "party-wear" },
-  "western/tops": { categoryLabel: "Tops & Blouses", section: "party-wear" },
-  "western/jumpsuits": { categoryLabel: "Jumpsuits", section: "party-wear" },
-  "western/skirts": { categoryLabel: "Skirts", section: "party-wear" },
+  
 };
 
 function resolveSubpageConfig(slug?: string[]) {

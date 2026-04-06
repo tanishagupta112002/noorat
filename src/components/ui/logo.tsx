@@ -7,6 +7,8 @@ type LogoProps = {
 };
 
 export function Logo({ className, imageClassName }: LogoProps) {
+  const resolvedImageClassName = imageClassName ?? "h-20";
+
   return (
     <Link
       href="/"
@@ -19,7 +21,7 @@ export function Logo({ className, imageClassName }: LogoProps) {
           alt="Noorat Logo"
           width={160}
           height={60}
-          className={`block h-20 w-auto shrink-0 rounded-full object-contain transition-transform duration-200 group-hover:scale-[1.02] ${imageClassName || ""}`}
+          className={`block ${resolvedImageClassName} w-auto shrink-0 rounded-full object-contain transition-transform duration-200 group-hover:scale-[1.02]`}
         />
         
       </div>

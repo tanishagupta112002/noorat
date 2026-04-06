@@ -5,6 +5,7 @@ export const fetchProfile = async () => {
     method: "GET",
     cache: "no-store",
     credentials: "include",
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!res.ok) {
@@ -28,6 +29,7 @@ export const updateProfile = async (form: ExtendedUser) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(form),
+    signal: AbortSignal.timeout(10000),
   });
 
   return res.json();

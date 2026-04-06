@@ -54,7 +54,7 @@ export default function ProviderInfoPage() {
         <div className="absolute -left-10 top-10 h-56 w-56 rounded-full bg-orange-200/60 blur-3xl" />
         <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-rose-200/60 blur-3xl" />
 
-        <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-20 lg:py-24">
           <div className="max-w-3xl space-y-6">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="outline" className="rounded-full border-orange-300/40 bg-white/80 px-4 py-1 text-orange-800">
@@ -104,7 +104,7 @@ export default function ProviderInfoPage() {
         </div>
       </section>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+      <div className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-14 sm:px-6 lg:px-20 lg:py-18">
         <section id="benefits" className="space-y-6 scroll-mt-32">
           <div className="max-w-2xl space-y-2">
             <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">Why become a provider?</h2>

@@ -19,7 +19,7 @@ export default function CustomRequestHowItWorksPage() {
   return (
     <div className="bg-background">
       <section className="border-b border-border/70 bg-linear-to-br from-lime-50/80 via-background to-emerald-100/60">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-20 lg:py-20">
           <Badge variant="outline" className="rounded-full bg-white/80 px-4 py-1">
             {content.eyebrow}
           </Badge>
@@ -28,7 +28,7 @@ export default function CustomRequestHowItWorksPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-20 lg:py-16">
         <div className="space-y-5">
           {content.cards?.map((card, index) => (
             <Card key={card.title} className="rounded-3xl border-border/70 shadow-sm">

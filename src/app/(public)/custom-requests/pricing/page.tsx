@@ -19,7 +19,7 @@ export default function CustomRequestPricingPage() {
   return (
     <div className="bg-background">
       <section className="border-b border-border/70 bg-linear-to-br from-amber-50/80 via-background to-orange-100/70">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-20 lg:py-20">
           <Badge variant="outline" className="rounded-full bg-white/80 px-4 py-1">
             {content.eyebrow}
           </Badge>
@@ -36,7 +36,7 @@ export default function CustomRequestPricingPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-20 lg:py-16">
         <div className="grid gap-5 md:grid-cols-3">
           {content.cards?.map((card) => (
             <Card key={card.title} className="rounded-3xl border-border/70 shadow-sm">

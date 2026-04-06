@@ -28,7 +28,6 @@ export default async function ProviderInventoryPage() {
 		select: {
 			id: true,
 			title: true,
-			Fabric: true,
 			size: true,
 			images: true,
 			category: true,
@@ -43,7 +42,6 @@ export default async function ProviderInventoryPage() {
 	} as any)) as Array<{
 		id: string;
 		title: string;
-		Fabric: string;
 		size: string;
 		images: string[];
 		category: string;
@@ -65,7 +63,7 @@ export default async function ProviderInventoryPage() {
 		size: listing.size,
 		images: listing.images,
 		category: listing.category,
-		color: listing.color || "Assorted",
+		color: listing.color?.trim().toLowerCase() === "assorted" ? "Multi Color" : (listing.color || "Multi Color"),
 		price: listing.price,
 		status: listing.status,
 		stockQuantity: listing.stockQuantity ?? 1,

@@ -63,7 +63,8 @@ export default function ProfilePage() {
       return;
     }
 
-    if (session) {
+    if (session?.user) {
+      applyUserToForm(session.user as ExtendedUser);
       void loadProfile();
     }
   }, [session, loading, router]);

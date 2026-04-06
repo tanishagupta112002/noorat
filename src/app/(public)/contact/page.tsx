@@ -17,7 +17,7 @@ export default function ContactPage() {
   return (
     <div className="bg-background">
       <section className="border-b border-border/70 bg-linear-to-br from-orange-50/80 via-background to-rose-100/60">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-20 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <div className="space-y-6">
               <Badge variant="outline" className="rounded-full bg-white/80 px-4 py-1">
@@ -59,7 +59,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 lg:grid-cols-3 lg:px-8 lg:py-16">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 lg:grid-cols-3 lg:px-20 lg:py-16">
         {content.cards?.map((card) => (
           <Card key={card.title} className="rounded-3xl border-border/70 shadow-sm">
             <CardHeader className="space-y-2">
@@ -84,7 +84,7 @@ export default function ContactPage() {
       </div>
 
       {content.columns?.length ? (
-        <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 lg:px-8 lg:pb-16">
+        <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 lg:px-20 lg:pb-16">
           <Card className="rounded-[2rem] border-border/70 bg-muted/40 shadow-sm">
             <CardHeader>
               <CardTitle className="font-playfair text-3xl font-semibold">

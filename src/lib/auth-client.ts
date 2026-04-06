@@ -1,15 +1,3 @@
-// // src/lib/auth-client.ts
-// import { createAuthClient } from "better-auth/react";
-// import { emailOTPClient } from "better-auth/client/plugins"
-
-// export const authClient = createAuthClient({
-//   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-//   plugins: [
-//         emailOTPClient() 
-//     ]
-// });
-
-
 // src/lib/auth-client.ts
 import { createAuthClient } from "better-auth/react";
 import { emailOTPClient } from "better-auth/client/plugins";
@@ -21,10 +9,9 @@ const envClientBaseUrl =
     ? process.env.NEXT_PUBLIC_APP_URL.trim()
     : "") || "http://localhost:3000";
 
+// Always prefer same-origin in browser to avoid cross-domain auth latency/timeouts.
 const clientBaseUrl =
-  typeof window !== "undefined" && process.env.NODE_ENV !== "production"
-    ? window.location.origin
-    : envClientBaseUrl;
+  typeof window !== "undefined" ? window.location.origin : envClientBaseUrl;
 
 export const authClient = createAuthClient({
   baseURL: clientBaseUrl,

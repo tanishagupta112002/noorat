@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ type OtpData = z.infer<typeof otpSchema>;
 
 export default function MobileVerification() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
@@ -48,8 +49,24 @@ export default function MobileVerification() {
   useEffect(() => {
     async function checkStep() {
       try {
-        const { nextStep } = await getOnboardingStatus();
-        if (nextStep !== "/become-a-provider/onboarding/1_mobile_verification") {
+        const response = await fetch("/api/provider/access", {
+          cache: "no-store",
+          signal: AbortSignal.timeout(8000),
+        });
+
+        if (!response.ok) {
+          router.replace("/auth");
+          return;
+        }
+
+        const data = await response.json();
+        const rawNextStep = typeof data?.providerHref === "string" ? data.providerHref : "/auth";
+        const nextStep =
+          rawNextStep === "/become-a-provider/onboarding"
+            ? "/become-a-provider/onboarding/1_mobile_verification"
+            : rawNextStep;
+
+        if (nextStep !== pathname) {
           router.replace(nextStep);
         }
       } catch {
@@ -57,7 +74,7 @@ export default function MobileVerification() {
       }
     }
     void checkStep();
-  }, [router]);
+  }, [pathname, router]);
 
   // Resend cooldown timer
   useEffect(() => {

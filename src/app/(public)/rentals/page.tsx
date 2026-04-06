@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
+import { X } from "lucide-react";
 
 import {
   RENTAL_CATEGORY_OPTIONS,
@@ -8,6 +9,7 @@ import {
   RENTAL_SIZE_OPTIONS,
   type RentalCategoryOption,
 } from "@/lib/rental-listing-options";
+import { STRICT_CATEGORY_MAPPING, OCCASION_COLOR_RECOMMENDATIONS } from "@/CATEGORY_FILTER_MAPPING";
 
 import { RentalsDesktopFilterBar } from "./_components/RentalsDesktopFilterBar";
 import { RentalsMobileControls } from "./_components/RentalsMobileControls";
@@ -51,10 +53,9 @@ type PageProps = {
 };
 
 const SECTION_CATEGORY_LABELS: Record<string, string[]> = {
-  western: ["Western Wear", "Dresses", "Celebrity Styles", "Date Specials", "Birthday Specials", "Cocktail Party"],
-  ethnic: ["Traditional Wear", "Sarees", "Lehengas", "Indo Western", "Salwar Suits", "Anarkalis", "Kurtis & Sets", "Lehenga Saree", "Heavy Gowns", "Mehndi Outfits", "Haldi Outfits", "Rajasthani Poshak"],
-  bridal: ["Bridal Specials", "Bridal Lehengas", "Engagement Gowns", "Reception Gowns", "Reception Gown Saree", "Mehndi & Haldi Outfits", "Sangeet Dresses", "Bridal Sarees", "Poshak"],
-  "party-wear": ["Party Wear", "Casual Outfits", "Tops & Blouses", "Jumpsuits", "Skirts", "Shorts", "Co-ord Sets"],
+  western: ["Western Wear", "Dresses", "Frock Dresses", "Bodycon Dresses", "Gowns", "Slit Gowns", "Cape Gowns", "Western Saree Dresses", "Maxi Dresses", "Mini Dresses", "Mermaid Gowns", "Celebrity Styles"],
+  ethnic: ["Traditional Wear", "Sarees", "Lehengas", "Indo Western", "Salwar Suits", "Anarkalis", "Kurtis & Sets", "Lehenga Saree", "Heavy Gowns", "Mehndi Outfits", "Haldi Outfits", "Engagement Gowns", "Reception Gowns", "Reception Saree", "Mehndi & Haldi Outfits", "Sangeet Dresses", "Rajasthani Poshak"],
+  bridal: ["Bridal Specials", "Bridal Lehengas", "Engagement Gowns", "Reception Gowns", "Reception Saree", "Mehndi & Haldi Outfits", "Sangeet Dresses", "Bridal Sarees", "Rajasthani Poshak", "Traditional Wear", "Sarees", "Lehengas", "Indo Western", "Salwar Suits", "Anarkalis", "Kurtis & Sets", "Lehenga Saree", "Heavy Gowns", "Mehndi Outfits", "Haldi Outfits"],
 };
 
 const placeholderImage = "/images/image.png";
@@ -71,32 +72,68 @@ function normalizeText(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function categoryMatches(category: string, configuredLabel: string, aliases: string[] = []) {
-  const categoryText = normalizeText(category);
-  const labelText = normalizeText(configuredLabel);
-
-  if (!categoryText || !labelText) {
-    return false;
-  }
-
-  const directMatch =
-    categoryText === labelText ||
-    categoryText.includes(labelText);
-
-  if (directMatch) {
+function matchesSearchQuery(
+  rental: {
+    title: string;
+    category: string;
+    color: string;
+    city: string;
+    providerName: string;
+    description: string;
+    occasion: string;
+  },
+  query: string,
+  isLooseMatch = false,
+) {
+  const normalizedQuery = normalizeText(query);
+  if (!normalizedQuery) {
     return true;
   }
 
-  return aliases.some((alias) => {
-    const aliasText = normalizeText(alias);
-    if (!aliasText) {
-      return false;
-    }
-    return (
-      categoryText === aliasText ||
-      categoryText.includes(aliasText)
-    );
-  });
+  const queryTokens = normalizedQuery.split(" ").filter(Boolean);
+  if (queryTokens.length === 0) {
+    return true;
+  }
+
+  const haystack = normalizeText(
+    [
+      rental.title,
+      rental.category,
+      rental.color,
+      rental.city,
+      rental.providerName,
+      rental.description,
+      rental.occasion,
+    ].join(" "),
+  );
+
+  const matchedTokenCount = queryTokens.reduce((count, token) => {
+    return haystack.includes(token) ? count + 1 : count;
+  }, 0);
+
+  if (!isLooseMatch) {
+    return matchedTokenCount === queryTokens.length;
+  }
+
+  // Loose mode: keep results broad for camera/file-name derived queries.
+  const minRequired = queryTokens.length === 1 ? 1 : Math.max(1, Math.ceil(queryTokens.length / 2));
+  return matchedTokenCount >= minRequired;
+}
+
+// Direct category matching using STRICT_CATEGORY_MAPPING
+function getCategoryAllowedMatches(selectedLabel: string): string[] {
+  return STRICT_CATEGORY_MAPPING[selectedLabel] ?? [];
+}
+
+function categoryMatches(rentalCategory: string, selectedLabel: string): boolean {
+  const allowedCategories = getCategoryAllowedMatches(selectedLabel);
+  return allowedCategories.some(
+    (allowed) => normalizeText(rentalCategory) === normalizeText(allowed)
+  );
+}
+
+function categoryMatchesSection(category: string, sectionCategories: RentalCategoryOption[]) {
+  return sectionCategories.some((entry) => categoryMatches(category, entry.label));
 }
 
 function extractSizes(sizeValue: string) {
@@ -118,7 +155,14 @@ function extractSizes(sizeValue: string) {
 
 function sizeMatches(listingSize: string, selectedSize: string) {
   const selected = normalizeText(selectedSize);
-  return extractSizes(listingSize).some((item) => normalizeText(item) === selected);
+  const listingSizes = extractSizes(listingSize);
+
+  // Free size listings should stay discoverable regardless of selected size.
+  if (listingSizes.some((item) => normalizeText(item) === normalizeText("Free Size"))) {
+    return true;
+  }
+
+  return listingSizes.some((item) => normalizeText(item) === selected);
 }
 
 const COLOR_SMART_ALIASES: Record<string, string[]> = {
@@ -228,13 +272,22 @@ function buildClearFilterKeyHref(currentParams: URLSearchParams, key: string) {
   return query ? `/rentals?${query}` : "/rentals";
 }
 
+function buildClearSearchHref(currentParams: URLSearchParams) {
+  const next = new URLSearchParams(currentParams.toString());
+  next.delete("q");
+  next.delete("match");
+  next.delete("source");
+  const query = next.toString();
+  return query ? `/rentals?${query}` : "/rentals";
+}
+
 function buildCurrentRentalsHref(currentParams: URLSearchParams) {
   const query = currentParams.toString();
   return query ? `/rentals?${query}` : "/rentals";
 }
 
 function getCategoryHref(categoryLabel: string, categories: RentalCategoryOption[]) {
-  const match = categories.find((entry) => categoryMatches(categoryLabel, entry.label, entry.aliases));
+  const match = categories.find((entry) => categoryMatches(categoryLabel, entry.label));
   return match?.href ?? "/rentals";
 }
 
@@ -252,40 +305,82 @@ function formatCompact(value: number) {
 
 function getColorSwatchClass(color: string) {
   const swatches: Record<string, string> = {
-    Assorted: "bg-gradient-to-r from-slate-300 via-zinc-100 to-slate-500 border border-border",
     "Multi Color": "bg-gradient-to-r from-red-500 via-yellow-400 to-blue-500",
     Red: "bg-red-500",
     Pink: "bg-pink-400",
+    "Light Pink": "bg-pink-200 border border-border",
+    "Hot Pink": "bg-pink-500",
+    "Rose Pink": "bg-rose-400",
     Blue: "bg-blue-500",
+    "Sky Blue": "bg-sky-300",
+    "Light Blue": "bg-blue-200 border border-border",
+    "Royal Blue": "bg-blue-700",
+    "Powder Blue": "bg-sky-200 border border-border",
     Green: "bg-emerald-500",
+    "Light Green": "bg-green-200 border border-border",
+    "Sea Green": "bg-emerald-600",
+    "Lime Green": "bg-lime-500",
+    "Forest Green": "bg-green-800",
     Yellow: "bg-yellow-400",
+    "Light Yellow": "bg-yellow-200 border border-border",
+    "Lemon Yellow": "bg-yellow-300 border border-border",
     Black: "bg-slate-900",
     Maroon: "bg-red-900",
     Gold: "bg-yellow-700",
     Silver: "bg-gray-400",
     White: "bg-background border border-border",
     Purple: "bg-violet-500",
+    "Light Purple": "bg-violet-200 border border-border",
+    Lilac: "bg-purple-200 border border-border",
     Orange: "bg-orange-500",
+    "Burnt Orange": "bg-orange-700",
     Brown: "bg-amber-900",
+    "Dark Brown": "bg-stone-800",
+    "Coffee Brown": "bg-amber-800",
+    "Chocolate Brown": "bg-amber-950",
+    Tan: "bg-amber-300 border border-border",
+    Camel: "bg-amber-400",
     Beige: "bg-amber-100 border border-border",
     Cream: "bg-amber-50 border border-border",
     Ivory: "bg-stone-100 border border-border",
     Grey: "bg-neutral-400",
+    "Light Grey": "bg-neutral-200 border border-border",
+    Charcoal: "bg-zinc-700",
     Navy: "bg-blue-900",
     Teal: "bg-teal-500",
     Turquoise: "bg-cyan-400",
+    Aqua: "bg-cyan-300",
+    Cyan: "bg-cyan-500",
     Mint: "bg-emerald-300",
     Olive: "bg-lime-700",
     Peach: "bg-orange-200 border border-border",
+    "Light Peach": "bg-orange-100 border border-border",
     Coral: "bg-rose-400",
     Lavender: "bg-purple-300",
     Magenta: "bg-fuchsia-600",
     Mustard: "bg-amber-500",
     Rust: "bg-orange-700",
     Wine: "bg-rose-900",
+    Burgundy: "bg-red-950",
+    Plum: "bg-purple-800",
+    Mauve: "bg-rose-300 border border-border",
+    Periwinkle: "bg-indigo-200 border border-border",
+    Champagne: "bg-yellow-100 border border-border",
+    "Rose Gold": "bg-rose-300",
+    Copper: "bg-orange-800",
+    "Off White": "bg-neutral-50 border border-border",
+    Nude: "bg-orange-100 border border-border",
+    Khaki: "bg-lime-300 border border-border",
+    Emerald: "bg-emerald-700",
+    "Sage Green": "bg-green-300 border border-border",
+    "Mint Green": "bg-emerald-200 border border-border",
+    "Pastel Pink": "bg-pink-100 border border-border",
+    "Pastel Blue": "bg-sky-100 border border-border",
+    "Pastel Green": "bg-green-100 border border-border",
+    "Pastel Yellow": "bg-yellow-100 border border-border",
   };
 
-  return swatches[color] ?? swatches.Assorted;
+  return swatches[color] ?? swatches["Multi Color"];
 }
 
 function FilterContent({
@@ -347,7 +442,7 @@ function FilterContent({
                   type="checkbox"
                   readOnly
                   checked={selectedCategories.some((entry) => normalizeText(entry) === normalizeText(category.label))}
-                  className="h-4 w-4 rounded border-input"
+                  className="pointer-events-none h-4 w-4 rounded border-input"
                 />
                 <span className="line-clamp-1">{category.label}</span>
               </Link>
@@ -369,7 +464,7 @@ function FilterContent({
                   type="checkbox"
                   readOnly
                   checked={selectedBoutiques.some((entry) => normalizeText(entry) === normalizeText(boutique.label))}
-                  className="h-4 w-4 rounded border-input"
+                  className="pointer-events-none h-4 w-4 rounded border-input"
                 />
                 <span className="line-clamp-1">{boutique.label}</span>
               </Link>
@@ -391,7 +486,7 @@ function FilterContent({
                   type="checkbox"
                   readOnly
                   checked={selectedSizes.some((entry) => normalizeText(entry) === normalizeText(size.label))}
-                  className="h-4 w-4 rounded border-input"
+                  className="pointer-events-none h-4 w-4 rounded border-input"
                 />
                 {size.label}
               </Link>
@@ -413,7 +508,7 @@ function FilterContent({
                   type="checkbox"
                   readOnly
                   checked={selectedCities.some((entry) => normalizeText(entry) === normalizeText(city.label))}
-                  className="h-4 w-4 rounded border-input"
+                  className="pointer-events-none h-4 w-4 rounded border-input"
                 />
                 <span className="line-clamp-1">{city.label}</span>
               </Link>
@@ -435,7 +530,7 @@ function FilterContent({
                   type="checkbox"
                   readOnly
                   checked={selectedPrices.some((entry) => normalizeText(entry) === normalizeText(range.key))}
-                  className="h-4 w-4 rounded border-input"
+                  className="pointer-events-none h-4 w-4 rounded border-input"
                 />
                 {range.label}
               </Link>
@@ -457,7 +552,7 @@ function FilterContent({
                   type="checkbox"
                   readOnly
                   checked={selectedColors.some((entry) => normalizeText(entry) === normalizeText(color.label))}
-                  className="h-4 w-4 rounded border-input"
+                  className="pointer-events-none h-4 w-4 rounded border-input"
                 />
                 <span className={`h-4 w-4 rounded-full ${color.swatchClass}`} />
                 {color.label}
@@ -483,6 +578,8 @@ export default async function RentalsPage({ searchParams }: PageProps) {
   const selectedPrices = toArray(rawParams.price);
   const selectedSort = toArray(rawParams.sort)[0] || sortOptions[0];
   const selectedSection = toArray(rawParams.section)[0]?.toLowerCase();
+  const selectedQuery = toArray(rawParams.q)[0] ?? "";
+  const selectedMatchMode = (toArray(rawParams.match)[0] ?? "").toLowerCase();
   const currentParamEntriesWithoutSort = Array.from(currentParams.entries()).filter(([key]) => key !== "sort");
 
   const rentals = await getRentals();
@@ -497,13 +594,13 @@ export default async function RentalsPage({ searchParams }: PageProps) {
   const sectionScopedRentals =
     selectedSection && configuredCategories.length > 0
       ? rentals.filter((rental) =>
-          configuredCategories.some((entry) => categoryMatches(rental.category, entry.label, entry.aliases)),
+          categoryMatchesSection(rental.category, configuredCategories),
         )
       : rentals;
 
   const categoryFilters: FilterOption[] = configuredCategories.map((entry) => ({
     label: entry.label,
-    count: sectionScopedRentals.filter((rental) => categoryMatches(rental.category, entry.label, entry.aliases)).length,
+    count: sectionScopedRentals.filter((rental) => categoryMatches(rental.category, entry.label)).length,
   }));
 
   const boutiqueMap = new Map<string, number>();
@@ -570,7 +667,8 @@ export default async function RentalsPage({ searchParams }: PageProps) {
 
   const colorMap = new Map<string, { label: string; count: number }>();
   for (const rental of sectionScopedRentals) {
-    const color = rental.color?.trim() || "Assorted";
+    const rawColor = rental.color?.trim() || "Multi Color";
+    const color = normalizeText(rawColor) === "assorted" ? "Multi Color" : rawColor;
     const colorKey = normalizeText(color);
     const existing = colorMap.get(colorKey);
 
@@ -598,19 +696,29 @@ export default async function RentalsPage({ searchParams }: PageProps) {
       .sort((a, b) => b.count - a.count),
   ];
 
+  // Occasion OR-colors: when a Mehndi/Haldi category is selected,
+  // listings can pass by matching the category label OR by matching occasion-appropriate colors
+  const occasionAutoColors: string[] = Array.from(
+    new Set(selectedCategories.flatMap((cat) => OCCASION_COLOR_RECOMMENDATIONS[cat] ?? [])),
+  );
+
   const filteredRentals = sectionScopedRentals
     .filter((rental) => {
-      if (
-        selectedCategories.length > 0 &&
-        !selectedCategories.some((entry) => {
-          const selectedConfig = configuredCategories.find((category) => normalizeText(category.label) === normalizeText(entry));
-          if (!selectedConfig) {
-            return categoryMatches(rental.category, entry);
-          }
-          return categoryMatches(rental.category, selectedConfig.label, selectedConfig.aliases);
-        })
-      ) {
+      if (selectedQuery && !matchesSearchQuery(rental, selectedQuery, selectedMatchMode === "loose")) {
         return false;
+      }
+
+      if (selectedCategories.length > 0) {
+        const matchesCategory = selectedCategories.some((entry) => categoryMatches(rental.category, entry));
+        // For occasion categories (Mehndi/Haldi), also accept listings whose color fits the occasion
+        const matchesOccasionColor =
+          occasionAutoColors.length > 0 &&
+          occasionAutoColors.some(
+            (color) => normalizeText(color) === normalizeText(rental.color || "Multi Color"),
+          );
+        if (!matchesCategory && !matchesOccasionColor) {
+          return false;
+        }
       }
 
       if (
@@ -629,7 +737,7 @@ export default async function RentalsPage({ searchParams }: PageProps) {
 
       if (
         selectedColors.length > 0 &&
-        !selectedColors.some((entry) => normalizeText(entry) === normalizeText(rental.color || "Assorted"))
+        !selectedColors.some((entry) => normalizeText(entry) === normalizeText(rental.color || "Multi Color"))
       ) {
         return false;
       }
@@ -667,6 +775,7 @@ export default async function RentalsPage({ searchParams }: PageProps) {
   const categoriesForUI = categoryFilters;
 
   const mobileSelectedFilterChips = [
+    ...(selectedQuery ? [selectedQuery] : []),
     ...selectedCategories.map((value) => {
       const matched = categoriesForUI.find((item) => normalizeText(item.label) === normalizeText(value));
       return matched?.label ?? value;
@@ -696,6 +805,8 @@ export default async function RentalsPage({ searchParams }: PageProps) {
   const uniqueMobileSelectedFilterChips = Array.from(
     new Map(mobileSelectedFilterChips.map((label) => [normalizeText(label), label])).values(),
   );
+
+  const rentalsHeading = selectedQuery ? selectedQuery : "All Rentals";
 
   const categoryMenuItems = categoriesForUI.map((category) => {
     const configuredCategory = configuredCategories.find((entry) => normalizeText(entry.label) === normalizeText(category.label));
@@ -790,11 +901,66 @@ export default async function RentalsPage({ searchParams }: PageProps) {
   const clearPriceHref = buildClearFilterKeyHref(currentParams, "price");
   const clearColorHref = buildClearFilterKeyHref(currentParams, "color");
   const clearCityHref = buildClearFilterKeyHref(currentParams, "city");
+  const clearSearchHref = buildClearSearchHref(currentParams);
   const applyHref = buildCurrentRentalsHref(currentParams);
+
+  const desktopSelectedFilterChips = [
+    ...selectedCategories.map((value) => {
+      const matched = categoriesForUI.find((item) => normalizeText(item.label) === normalizeText(value));
+      return {
+        key: `category:${normalizeText(value)}`,
+        label: matched?.label ?? value,
+        href: buildToggleHref(currentParams, "category", value),
+      };
+    }),
+    ...selectedBoutiques.map((value) => {
+      const matched = boutiqueFilters.find((item) => normalizeText(item.label) === normalizeText(value));
+      return {
+        key: `boutique:${normalizeText(value)}`,
+        label: matched?.label ?? value,
+        href: buildToggleHref(currentParams, "boutique", value),
+      };
+    }),
+    ...selectedCities.map((value) => {
+      const matched = cityFilters.find((item) => normalizeText(item.label) === normalizeText(value));
+      return {
+        key: `city:${normalizeText(value)}`,
+        label: matched?.label ?? value,
+        href: buildToggleHref(currentParams, "city", value),
+      };
+    }),
+    ...selectedSizes.map((value) => {
+      const matched = sizeFilters.find((item) => normalizeText(item.label) === normalizeText(value));
+      return {
+        key: `size:${normalizeText(value)}`,
+        label: matched?.label ?? value,
+        href: buildToggleHref(currentParams, "size", value),
+      };
+    }),
+    ...selectedPrices.map((value) => {
+      const matched = priceRanges.find((item) => normalizeText(item.key) === normalizeText(value));
+      return {
+        key: `price:${normalizeText(value)}`,
+        label: matched?.label ?? value,
+        href: buildToggleHref(currentParams, "price", value),
+      };
+    }),
+    ...selectedColors.map((value) => {
+      const matched = colors.find((item) => normalizeText(item.label) === normalizeText(value));
+      return {
+        key: `color:${normalizeText(value)}`,
+        label: matched?.label ?? value,
+        href: buildToggleHref(currentParams, "color", value),
+      };
+    }),
+    ...(selectedQuery
+      ? [{ key: `q:${normalizeText(selectedQuery)}`, label: `Search: ${selectedQuery}`, href: clearSearchHref }]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen bg-white text-foreground">
-      <div className="mx-auto w-full max-w-7xl px-3 pb-24 pt-4 sm:px-5 lg:pb-8">
+      <div className="mx-auto w-full px-4 sm:px-5 lg:px-20 pb-24 pt-4 lg:pb-8">
         <div className="mb-4 hidden items-center gap-2 text-xs text-muted-foreground md:flex">
           <Link href="/" className="hover:text-foreground">
             Home
@@ -807,12 +973,28 @@ export default async function RentalsPage({ searchParams }: PageProps) {
 
         <div className="mb-4 flex items-end justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-bold sm:text-2xl">All Rentals</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{rentalsHeading}</h1>
             <span className="text-sm text-muted-foreground">{filteredRentals.length} items</span>
           </div>
         </div>
 
         <div className="mb-4 border-y border-border py-2.5">
+          {desktopSelectedFilterChips.length > 0 ? (
+            <div className="mb-3 hidden flex-wrap items-center gap-2 lg:flex">
+              {desktopSelectedFilterChips.map((chip) => (
+                <Link
+                  key={chip.key}
+                  href={chip.href}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-input bg-muted/40 px-3 py-1 text-xs font-medium text-foreground/85 hover:bg-muted"
+                  aria-label={`Remove ${chip.label} filter`}
+                >
+                  <span>{chip.label}</span>
+                  <X className="h-3.5 w-3.5" />
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
           <RentalsMobileControls
             selectedFilterChips={uniqueMobileSelectedFilterChips}
             currentParamEntriesWithoutSort={currentParamEntriesWithoutSort}

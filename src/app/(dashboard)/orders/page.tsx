@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTimeout } from "@/lib/server-timeout";
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -35,13 +36,18 @@ function orderStatusLabel(status: string) {
 }
 
 export default async function OrdersPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const requestHeaders = await headers();
+  const session = (await withTimeout(
+    auth.api.getSession({ headers: requestHeaders }),
+    8000,
+    "Dashboard session lookup"
+  )) as any;
 
   if (!session?.user?.id) {
     redirect("/auth?mode=signup&redirect=/orders");
   }
 
-  const orders = await prisma.order.findMany({
+  const orders = await withTimeout(prisma.order.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
     take: 25,
@@ -66,7 +72,7 @@ export default async function OrdersPage() {
         },
       },
     },
-  });
+  }), 12000, "Orders query");
 
   return (
     <div>

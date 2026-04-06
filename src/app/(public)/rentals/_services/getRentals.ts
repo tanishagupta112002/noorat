@@ -11,14 +11,17 @@ const listingCardSelect = {
 	price: true,
 	color: true,
 	images: true,
-	Fabric: true,
 	description: true,
 	providerId: true,
 	provider: {
 		select: {
 			businessName: true,
 			profilePhoto: true,
+			shopImage: true,
+			address: true,
 			city: true,
+			state: true,
+			pincode: true,
 		},
 	},
 } satisfies Prisma.ListingSelect;
@@ -29,7 +32,6 @@ export type PublicRental = {
 	category: string;
 	occasion: string;
 	size: string;
-	fabric: string;
 	originalPrice: number;
 	price: number;
 	color: string;
@@ -39,6 +41,10 @@ export type PublicRental = {
 	providerSlug: string;
 	providerId: string;
 	city: string;
+	providerState: string;
+	providerPincode: string;
+	providerAddress: string | null;
+	providerShopImage: string | null;
 	description: string;
 	rating: number;
 	reviewCount: number;
@@ -96,25 +102,27 @@ export function slugifyProviderName(value: string) {
 
 function toPublicRental(listing: ListingRow, stats?: ListingReviewStat): PublicRental {
 	const providerName = listing.provider.businessName?.trim() || "noorat Partner";
-	const fabric = listing.Fabric?.trim() || "Not specified";
 	const description = listing.description?.trim() || "";
 
 	return {
 		id: listing.id,
 		title: listing.title,
 		category: listing.category,
-		occasion: inferOccasionFromText(listing.title, listing.category, listing.Fabric),
+		occasion: inferOccasionFromText(listing.title, listing.category),
 		size: listing.size,
-		fabric,
 		originalPrice: listing.originalPrice,
 		price: listing.price,
-		color: listing.color || "Assorted",
+		color: listing.color?.trim().toLowerCase() === "assorted" ? "Multi Color" : (listing.color || "Multi Color"),
 		images: listing.images,
 		providerName,
 		providerPhoto: listing.provider.profilePhoto || null,
 		providerSlug: slugifyProviderName(providerName),
 		providerId: listing.providerId,
 		city: listing.provider.city?.trim() || "India",
+		providerAddress: listing.provider.address || null,
+		providerShopImage: listing.provider.shopImage || null,
+		providerState: listing.provider.state?.trim() || "",
+		providerPincode: (listing.provider.pincode || "").replace(/\D/g, "").slice(0, 6),
 		description,
 		rating: stats?.rating ?? 0,
 		reviewCount: stats?.reviewCount ?? 0,
@@ -142,10 +150,10 @@ async function getListingReviewStats(listingIds: string[]): Promise<Map<string, 
 	);
 }
 
-async function fetchListingRows(limit = 120, where: Prisma.ListingWhereInput = { status: true }) {
+async function fetchListingRows(limit: number | undefined = 120, where: Prisma.ListingWhereInput = { status: true }) {
 	return prisma.listing.findMany({
 		orderBy: { createdAt: "desc" },
-		take: limit,
+		take: typeof limit === "number" ? limit : undefined,
 		where,
 		select: listingCardSelect,
 	});
@@ -153,7 +161,7 @@ async function fetchListingRows(limit = 120, where: Prisma.ListingWhereInput = {
 
 const getRentalsCached = unstable_cache(async (): Promise<PublicRental[]> => {
 	try {
-		const listings = await fetchListingRows();
+		const listings = await fetchListingRows(undefined);
 		const statsMap = await getListingReviewStats(listings.map((listing) => listing.id));
 		return listings.map((listing) => toPublicRental(listing, statsMap.get(listing.id)));
 	} catch {

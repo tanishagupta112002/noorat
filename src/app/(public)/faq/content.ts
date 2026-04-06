@@ -69,7 +69,7 @@ export const content: PublicPageContent = {
     title: "Still need a human answer?",
     description: "Use the contact route when you are between two categories, unsure about custom requests or need help deciding which customer page to use next.",
     primary: { label: "Open contact page", href: "/contact" },
-    secondary: { label: "See nearby designers", href: "/nearby-designers" },
+    secondary: { label: "See nearby designers", href: "/designer-studios/nearby" },
   },
 };
 

@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { getOnboardingStatus } from "./_actions/onboarding-actions";
 import { Logo } from "@/components/ui/logo";
 
 export default function OnboardingLayout({
@@ -28,9 +27,22 @@ export default function OnboardingLayout({
     let active = true;
 
     async function loadStatus() {
-      const { nextStep } = await getOnboardingStatus();
-      if (!active) return;
-      setNextAllowedPath(nextStep);
+      try {
+        const response = await fetch("/api/provider/access", {
+          cache: "no-store",
+          signal: AbortSignal.timeout(8000),
+        });
+
+        if (!response.ok || !active) return;
+
+        const data = await response.json();
+        const nextStep = typeof data?.providerHref === "string" ? data.providerHref : "";
+
+        if (!nextStep) return;
+        setNextAllowedPath(nextStep);
+      } catch {
+        // Keep default onboarding step when status lookup fails.
+      }
     }
 
     void loadStatus();

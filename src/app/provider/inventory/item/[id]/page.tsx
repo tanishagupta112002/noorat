@@ -37,7 +37,6 @@ export default async function ProviderInventoryItemPage({ params }: PageProps) {
     select: {
       id: true,
       title: true,
-      Fabric: true,
       size: true,
       images: true,
       category: true,
@@ -53,7 +52,6 @@ export default async function ProviderInventoryItemPage({ params }: PageProps) {
     | {
         id: string;
         title: string;
-        Fabric: string;
         size: string;
         images: string[];
         category: string;
@@ -88,11 +86,10 @@ export default async function ProviderInventoryItemPage({ params }: PageProps) {
           {
             id: listing.id,
             title: listing.title,
-            fabric: listing.Fabric,
             size: listing.size,
             images: listing.images,
             category: listing.category,
-            color: listing.color || "Assorted",
+            color: listing.color?.trim().toLowerCase() === "assorted" ? "Multi Color" : (listing.color || "Multi Color"),
             originalPrice: listing.originalPrice,
             price: listing.price,
             status: listing.status,

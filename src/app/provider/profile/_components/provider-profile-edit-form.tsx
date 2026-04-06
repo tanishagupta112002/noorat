@@ -31,6 +31,7 @@ const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
 
 const providerProfileSchema = z.object({
   profilePhoto: z.string().optional(),
+  shopImage: z.string().optional(),
   businessName: z.string().max(120, "Business name is too long").optional(),
   providerType: z.enum(["BOUTIQUE", "RENTAL", ""]).optional(),
   phone: z.string().regex(phoneRegex, "Enter a valid Indian mobile number"),
@@ -93,6 +94,8 @@ export function ProviderProfileEditForm({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isRemovingPhoto, setIsRemovingPhoto] = useState(false);
+  const [isUploadingShopImage, setIsUploadingShopImage] = useState(false);
+  const [isRemovingShopImage, setIsRemovingShopImage] = useState(false);
   const [deleteText, setDeleteText] = useState("");
   const [phoneOtp, setPhoneOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -102,6 +105,13 @@ export function ProviderProfileEditForm({
   );
   const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
   const [pendingPhotoPreview, setPendingPhotoPreview] = useState<string | null>(
+    null,
+  );
+  const [currentShopImage, setCurrentShopImage] = useState(
+    initialValues.shopImage?.trim() || "",
+  );
+  const [pendingShopImageFile, setPendingShopImageFile] = useState<File | null>(null);
+  const [pendingShopImagePreview, setPendingShopImagePreview] = useState<string | null>(
     null,
   );
 
@@ -127,9 +137,16 @@ export function ProviderProfileEditForm({
     }
     setPendingPhotoPreview(null);
     setPendingPhotoFile(null);
+
+    if (pendingShopImagePreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(pendingShopImagePreview);
+    }
+    setPendingShopImagePreview(null);
+    setPendingShopImageFile(null);
   };
 
   const displayProfilePhoto = pendingPhotoPreview || currentProfilePhoto;
+  const displayShopImage = pendingShopImagePreview || currentShopImage;
 
   const handlePhotoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
@@ -185,6 +202,63 @@ export function ProviderProfileEditForm({
       toast.error("Unable to remove profile photo right now");
     } finally {
       setIsRemovingPhoto(false);
+    }
+  };
+
+  const handleShopImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null;
+    if (!file) return;
+
+    const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedMimeTypes.includes(file.type)) {
+      toast.error("Only JPG, PNG, and WEBP images are allowed");
+      event.target.value = "";
+      return;
+    }
+
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      toast.error("Shop image must be smaller than 5MB");
+      event.target.value = "";
+      return;
+    }
+
+    if (pendingShopImagePreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(pendingShopImagePreview);
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPendingShopImageFile(file);
+    setPendingShopImagePreview(objectUrl);
+  };
+
+  const handleRemoveShopImage = async () => {
+    try {
+      setIsRemovingShopImage(true);
+
+      const response = await fetch("/api/provider/profile/shop-image", {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        toast.error(data?.error || "Unable to remove shop image");
+        return;
+      }
+
+      if (pendingShopImagePreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(pendingShopImagePreview);
+      }
+
+      setCurrentShopImage("");
+      setPendingShopImageFile(null);
+      setPendingShopImagePreview(null);
+      toast.success("Shop image removed");
+      router.refresh();
+    } catch {
+      toast.error("Unable to remove shop image right now");
+    } finally {
+      setIsRemovingShopImage(false);
     }
   };
 
@@ -301,6 +375,7 @@ export function ProviderProfileEditForm({
     try {
       setIsSaving(true);
       let uploadedProfilePhoto = currentProfilePhoto;
+      let uploadedShopImage = currentShopImage;
 
       if (pendingPhotoFile) {
         setIsUploadingPhoto(true);
@@ -329,7 +404,34 @@ export function ProviderProfileEditForm({
         setPendingPhotoPreview(null);
       }
 
-      const { profilePhoto: _ignoredProfilePhoto, ...restValues } = values;
+      if (pendingShopImageFile) {
+        setIsUploadingShopImage(true);
+
+        const shopImageFormData = new FormData();
+        shopImageFormData.append("shopImage", pendingShopImageFile);
+
+        const shopImageResponse = await fetch("/api/provider/profile/shop-image", {
+          method: "POST",
+          body: shopImageFormData,
+        });
+
+        const shopImageData = await shopImageResponse.json();
+        if (!shopImageResponse.ok || !shopImageData?.success) {
+          toast.error(shopImageData?.error || "Unable to upload shop image");
+          return;
+        }
+
+        uploadedShopImage = shopImageData.shopImage || "";
+        setCurrentShopImage(uploadedShopImage);
+
+        if (pendingShopImagePreview?.startsWith("blob:")) {
+          URL.revokeObjectURL(pendingShopImagePreview);
+        }
+        setPendingShopImageFile(null);
+        setPendingShopImagePreview(null);
+      }
+
+      const { profilePhoto: _ignoredProfilePhoto, shopImage: _ignoredShopImage, ...restValues } = values;
       const payload = {
         ...restValues,
         providerType: values.providerType || undefined,
@@ -355,11 +457,13 @@ export function ProviderProfileEditForm({
       setIsPhoneVerified(false);
       setPhoneOtp("");
       setCurrentProfilePhoto(uploadedProfilePhoto);
+      setCurrentShopImage(uploadedShopImage);
       router.refresh();
     } catch {
       toast.error("Something went wrong while updating profile");
     } finally {
       setIsUploadingPhoto(false);
+      setIsUploadingShopImage(false);
       setIsSaving(false);
     }
   });
@@ -383,7 +487,7 @@ export function ProviderProfileEditForm({
           </Button>
         ) : (
           <div className="flex items-center gap-2">
-            <Button type="submit" disabled={isSaving || isUploadingPhoto || isRemovingPhoto}>
+            <Button type="submit" disabled={isSaving || isUploadingPhoto || isRemovingPhoto || isUploadingShopImage || isRemovingShopImage}>
               {isSaving ? "Saving..." : "Save"}
             </Button>
             <Button type="button" variant="ghost" onClick={resetEditState}>
@@ -430,6 +534,50 @@ export function ProviderProfileEditForm({
                   disabled={isSaving || isUploadingPhoto || isRemovingPhoto}
                 >
                   {isRemovingPhoto ? "Removing..." : "Remove photo"}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border/70 bg-background/40 p-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-4">
+            {displayShopImage && (
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border/70">
+                <img
+                  src={displayShopImage}
+                  alt="Shop"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Shop image</p>
+              <p className="text-xs text-muted-foreground">
+                Upload a clear JPG, PNG, or WEBP image up to 5MB. This will be shown on your studio profile.
+              </p>
+            </div>
+          </div>
+
+          {isEditing ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleShopImageFileChange}
+                disabled={isSaving || isUploadingShopImage || isRemovingShopImage}
+                className="max-w-65"
+              />
+              {displayShopImage ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleRemoveShopImage}
+                  disabled={isSaving || isUploadingShopImage || isRemovingShopImage}
+                >
+                  {isRemovingShopImage ? "Removing..." : "Remove image"}
                 </Button>
               ) : null}
             </div>

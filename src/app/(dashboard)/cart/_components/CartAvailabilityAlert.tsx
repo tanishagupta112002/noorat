@@ -41,6 +41,7 @@ export function CartAvailabilityAlert({ cartItems, disabled }: CartAvailabilityA
               quantity: item.quantity,
             })),
           }),
+          signal: AbortSignal.timeout(8000),
         });
 
         const result = await response.json();

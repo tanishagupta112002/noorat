@@ -173,6 +173,8 @@ model ProviderProfile {
   pincode      String?
   description  String?
   profilePhoto String?
+  shopImage    String?
+  inStoreTrial Boolean  @default(false)
   bankAccountNumber String? 
   bankIfsc          String? 
   bankAccountName   String? 
@@ -207,7 +209,6 @@ model Listing {
   provider    ProviderProfile @relation("ProviderListings", fields: [providerId], references: [id], onDelete: Cascade)
 
   title       String
-  Fabric      String
   size        String   @default("Free Size")
   
   images      String[]
@@ -215,7 +216,7 @@ model Listing {
   originalPrice Float    @default(0)
   price       Float
   category    String
-  color       String   @default("Assorted")
+  color       String   @default("Multi Color")
 
   status      Boolean  @default(true)
   stockQuantity Int     @default(1)

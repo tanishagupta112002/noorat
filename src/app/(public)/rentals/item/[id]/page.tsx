@@ -233,23 +233,18 @@ export default async function RentalDetailPage({ params }: PageProps) {
             <div className="rounded-lg sm:rounded-[24px] border border-border/60 bg-white p-4 sm:p-5 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
               <h1 className="text-base sm:text-lg font-semibold text-foreground mb-2">Product Details</h1>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-                <p className="text-xs sm:text-sm">
-                  <span className="font-semibold">Size:</span>{" "}
-                  <span className="rounded-md border border-border bg-muted px-2.5 py-0.5 font-medium">
-                    {rental.size}
-                  </span>
-                </p>
+                <span className="rounded-md border border-border bg-muted px-2.5 py-0.5 text-xs sm:text-sm font-medium">
+                  {rental.size}
+                </span>
                 <Link href="/size-guide" className="text-xs text-primary hover:underline shrink-0">Size Guide →</Link>
               </div>
 
-              <p className="mt-2 sm:mt-3 text-xs sm:text-sm">
-                <span className="font-semibold">Fabric: </span>
-                <span className="text-muted-foreground">{rental.fabric}</span>
-              </p>
+              {rental.description ? (
+                <p className="mt-2 sm:mt-3 text-xs sm:text-sm leading-5 sm:leading-6 text-muted-foreground">{rental.description}</p>
+              ) : null}
 
               {colorList.length > 0 ? (
                 <div className="mt-2 sm:mt-3 space-y-2">
-                  <p className="text-xs sm:text-sm font-semibold">Available Colors</p>
                   <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {colorList.map((color) => (
                       <span

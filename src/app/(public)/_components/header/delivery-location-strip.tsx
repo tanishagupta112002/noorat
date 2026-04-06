@@ -106,7 +106,7 @@ export default function DeliveryLocationStrip() {
   const { session } = useSession();
   const userId = session?.user?.id;
   
-  const isVisible = pathname === "/" || /^\/rentals\/item\/[^/]+\/?$/.test(pathname);
+  const isVisible = true;
 
   const [mounted, setMounted] = useState(false);
   const [book, setBook] = useState<DeliveryLocationBook>({ selectedId: null, addresses: [] });
@@ -379,22 +379,17 @@ export default function DeliveryLocationStrip() {
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
-        className="inline-flex items-center gap-1.5 text-sm text-foreground"
+        className="inline-flex items-center gap-1 text-[11px] lg:text-sm text-foreground lg:text-white min-w-0 overflow-hidden"
       >
-        <MapPin className="h-4 w-4" />
+        <MapPin className="h-3 w-3 lg:h-4 lg:w-4 shrink-0" />
         {selected ? (
-          <>
-            <span className="max-w-60 truncate font-semibold lg:max-w-90">
-              Deliver to {shortAddress(selected)}
-            </span>
-          </>
+          <span className="truncate font-semibold max-w-32.5 lg:max-w-90">
+            Deliver to {shortAddress(selected)}
+          </span>
         ) : (
-          <>
-            <span className="font-semibold">Location not set</span>
-            <span className="text-primary">Select delivery location</span>
-          </>
+          <span className="truncate font-semibold whitespace-nowrap">Location not set</span>
         )}
-        <ChevronRight className="h-4 w-4 text-primary" />
+        <ChevronRight className="h-3 w-3 lg:h-4 lg:w-4 shrink-0 text-muted-foreground lg:text-white/80" />
       </button>
 
       {mounted && typeof document !== "undefined"

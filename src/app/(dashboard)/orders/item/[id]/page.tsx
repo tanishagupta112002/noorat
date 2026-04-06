@@ -6,6 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTimeout } from "@/lib/server-timeout";
 import { OrderReviewPanel } from "../../_components/order-review-panel";
 import { OrderDecisionActions } from "../../_components/order-decision-actions";
 
@@ -64,7 +65,12 @@ type PageProps = {
 };
 
 export default async function OrderItemPage({ params }: PageProps) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const requestHeaders = await headers();
+  const session = (await withTimeout(
+    auth.api.getSession({ headers: requestHeaders }),
+    8000,
+    "Dashboard session lookup"
+  )) as any;
 
   if (!session?.user?.id) {
     redirect("/auth?mode=signup&redirect=/orders");
@@ -73,7 +79,7 @@ export default async function OrderItemPage({ params }: PageProps) {
   const { id } = await params;
   const reviewerEmail = session.user.email ?? "";
 
-  const order = await prisma.order.findUnique({
+  const order = await withTimeout(prisma.order.findUnique({
     where: { id },
     select: {
       id: true,
@@ -125,7 +131,7 @@ export default async function OrderItemPage({ params }: PageProps) {
         },
       },
     },
-  });
+  }), 12000, "Order details query");
 
   if (!order) {
     notFound();
@@ -137,7 +143,7 @@ export default async function OrderItemPage({ params }: PageProps) {
 
   const alreadyReviewed = reviewerEmail
     ? Boolean(
-        await prisma.listingReview.findFirst({
+        await withTimeout(prisma.listingReview.findFirst({
           where: {
             listingId: order.listing.id,
             reviewerEmail,
@@ -148,7 +154,7 @@ export default async function OrderItemPage({ params }: PageProps) {
           select: {
             id: true,
           },
-        }),
+        }), 10000, "Order review lookup")
       )
     : false;
 

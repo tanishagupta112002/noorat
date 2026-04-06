@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTimeout } from "@/lib/server-timeout";
 
 import { CartItemControls } from "./_components/CartItemControls";
 import { CheckoutButton } from "./_components/CheckoutButton";
@@ -40,14 +41,19 @@ const DELIVERY_FEE = 30;
 const SECURITY_AMOUNT_PER_ITEM = 1000;
 
 export default async function CartPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const requestHeaders = await headers();
+  const sessionData = (await withTimeout(
+    auth.api.getSession({ headers: requestHeaders }),
+    8000,
+    "Dashboard session lookup"
+  )) as any;
 
-  if (!session?.user?.id) {
+  if (!sessionData?.user?.id) {
     redirect("/auth?mode=signup&redirect=/cart");
   }
 
-  const cartItems = ((await (prisma as any).cartItem.findMany({
-    where: { userId: session.user.id },
+  const cartItems = ((await withTimeout((prisma as any).cartItem.findMany({
+    where: { userId: sessionData.user.id },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -71,7 +77,7 @@ export default async function CartPage() {
         },
       },
     },
-  })) as CartRow[]);
+  }), 12000, "Cart query")) as CartRow[]);
 
   // Calculate pricing
   const actualPrice = cartItems.reduce((sum, item) => sum + item.listing.originalPrice * item.quantity, 0);

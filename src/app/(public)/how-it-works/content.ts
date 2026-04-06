@@ -16,7 +16,7 @@ export const content: PublicPageContent = {
     { value: "Clear", label: "Designed to reduce rental hesitation" },
   ],
   primaryCta: { label: "Explore categories", href: "/categories" },
-  secondaryCta: { label: "Find nearby designers", href: "/nearby-designers" },
+  secondaryCta: { label: "Find nearby designers", href: "/designer-studios/nearby" },
   cardsTitle: "Core customer steps",
   cards: [
     { eyebrow: "Step 1", title: "Browse with purpose", description: "Start from categories, nearby designers or custom requests depending on whether you know the look, the event or the provider type first." },

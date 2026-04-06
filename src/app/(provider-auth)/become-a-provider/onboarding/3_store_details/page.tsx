@@ -41,7 +41,7 @@ export default function StoreDetails() {
         toast.success("Store details saved successfully!");
         router.push("/become-a-provider/onboarding/4_pickup_address");
       } else {
-        toast.error("Failed to save store details");
+        toast.error(res.message || "Failed to save store details");
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "An error occurred");

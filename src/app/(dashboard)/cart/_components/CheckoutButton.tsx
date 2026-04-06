@@ -149,7 +149,7 @@ export function CheckoutButton({ total }: CheckoutButtonProps) {
       const book = readDeliveryLocationBook(userId);
       
       // Fetch saved addresses from database
-      fetch("/api/customer/addresses")
+      fetch("/api/customer/addresses", { signal: AbortSignal.timeout(8000) })
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.addresses) {
@@ -269,7 +269,7 @@ export function CheckoutButton({ total }: CheckoutButtonProps) {
     writeDeliveryLocationBook(nextBook, userId);
 
     // Also save to database so it appears in future checkouts
-    fetch("/api/customer/addresses/add", {
+      fetch("/api/customer/addresses/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -280,6 +280,7 @@ export function CheckoutButton({ total }: CheckoutButtonProps) {
         state: address.state || null,
         pincode: address.pincode,
       }),
+      signal: AbortSignal.timeout(8000),
     }).catch(() => {
       // Silently fail - address is still in localStorage
     });

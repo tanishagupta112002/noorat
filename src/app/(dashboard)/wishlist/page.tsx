@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTimeout } from "@/lib/server-timeout";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { RentNowButton } from "@/components/cart/RentNowButton";
 import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
@@ -16,13 +17,18 @@ function formatPrice(value: number) {
 }
 
 export default async function WishlistPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const requestHeaders = await headers();
+  const session = (await withTimeout(
+    auth.api.getSession({ headers: requestHeaders }),
+    8000,
+    "Dashboard session lookup"
+  )) as any;
 
   if (!session?.user?.id) {
     redirect("/auth?mode=signup&redirect=/wishlist");
   }
 
-  const wishlistItems = await prisma.wishlist.findMany({
+  const wishlistItems = await withTimeout(prisma.wishlist.findMany({
     where: {
       userId: session.user.id,
     },
@@ -49,7 +55,7 @@ export default async function WishlistPage() {
         },
       },
     },
-  });
+  }), 12000, "Wishlist query");
 
 
   return (

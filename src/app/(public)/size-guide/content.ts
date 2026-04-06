@@ -27,6 +27,6 @@ export const content: PublicPageContent = {
   columns: [
     { title: "Before booking", icon: Ruler, items: ["Measure over well-fitted innerwear", "Write numbers down clearly", "Mention your heel plan", "Tell the provider if you prefer extra ease"] },
     { title: "Categories that need extra care", icon: Sparkles, items: ["Bridal lehengas", "Reception gowns", "Blouses", "Body-skimming western dresses"] },
-    { title: "When to ask for help", icon: HeartHandshake, items: ["If you sit between sizes", "If fabric has little stretch", "If the event is high stakes", "If the provider description feels vague"] },
+    { title: "When to ask for help", icon: HeartHandshake, items: ["If you sit between sizes", "If the fit looks structured", "If the event is high stakes", "If the provider description feels vague"] },
   ],
 };

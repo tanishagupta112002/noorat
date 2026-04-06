@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 
 const listingUpdateSchema = z.object({
 	title: z.string().min(2).max(140),
-	fabric: z.string().min(2).max(200),
 	description: z.string().max(2000).optional(),
 	size: z.string().min(1).max(40),
 	category: z.string().min(1).max(100),
@@ -63,7 +62,6 @@ export async function PATCH(
 		where: { id: listingId },
 		data: {
 			title: parsed.data.title,
-			Fabric: parsed.data.fabric,
 			description: parsed.data.description?.trim() || null,
 			size: parsed.data.size,
 			category: parsed.data.category,
@@ -76,7 +74,6 @@ export async function PATCH(
 		select: {
 			id: true,
 			title: true,
-			Fabric: true,
 			description: true,
 			size: true,
 			category: true,

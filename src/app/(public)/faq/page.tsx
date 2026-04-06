@@ -22,7 +22,7 @@ export default function FaqPage() {
   return (
     <div className="bg-background">
       <section className="border-b border-border/70 bg-linear-to-br from-rose-50/80 via-background to-orange-100/60">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-20 lg:py-20">
           <div className="space-y-6">
             <Badge variant="outline" className="rounded-full bg-white/80 px-4 py-1">
               {content.eyebrow}
@@ -43,7 +43,7 @@ export default function FaqPage() {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 lg:grid-cols-[1.25fr_0.75fr] lg:px-8 lg:py-16">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 lg:grid-cols-[1.25fr_0.75fr] lg:px-20 lg:py-16">
         <Card className="rounded-[2rem] border-border/70 shadow-sm">
           <CardHeader>
             <CardTitle className="font-playfair text-3xl font-semibold sm:text-4xl">

@@ -30,7 +30,6 @@ type CreateStockResponse = {
 
 const stockSchema = z.object({
 	title: z.string().min(2, "Title must be at least 2 characters"),
-	fabric: z.string().min(2, "Fabric must be at least 2 characters"),
 	description: z.string().max(2000).optional(),
 	size: z.string().min(1, "Size is required"),
 	originalPrice: z.coerce.number().positive("Original price must be a positive number"),
@@ -98,7 +97,6 @@ export async function createStockAction(formData: FormData): Promise<CreateStock
 
 		const data = {
 			title: formData.get("title") as string,
-			fabric: formData.get("fabric") as string,
 			description: (formData.get("description") as string) || "",
 			size: formData.get("size") as string,
 			originalPrice: formData.get("originalPrice") as string,
@@ -122,7 +120,6 @@ export async function createStockAction(formData: FormData): Promise<CreateStock
 			data: {
 				providerId: profile.id,
 				title: validated.title,
-				Fabric: validated.fabric,
 				description: validated.description?.trim() || null,
 				size: validated.size,
 				originalPrice: validated.originalPrice,

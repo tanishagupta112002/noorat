@@ -19,7 +19,7 @@ export default function CustomRequestsPage() {
   return (
     <div className="bg-background">
       <section className="border-b border-border/70 bg-linear-to-br from-orange-100/70 via-background to-rose-100/70">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-20 lg:py-20">
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <div className="space-y-6">
               <Badge variant="outline" className="rounded-full bg-white/80 px-4 py-1">
@@ -67,7 +67,7 @@ export default function CustomRequestsPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-20 lg:py-16">
         <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">{content.cardsTitle ?? "Use cases"}</h2>
         <div className="mt-6 grid gap-5 md:grid-cols-3">
           {content.cards?.map((card) => (

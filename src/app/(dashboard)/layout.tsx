@@ -84,16 +84,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (!session?.user?.id) return;
 
       try {
-        const res = await fetch("/api/provider/access", { cache: "no-store" });
+        const res = await fetch("/api/provider/access", {
+          cache: "no-store",
+          signal: AbortSignal.timeout(8000),
+        });
         if (!res.ok) return;
 
         const data = await res.json();
         if (isCancelled) return;
 
-        if (data?.canAccessProviderMode) {
+        if (data?.providerHref) {
           setProviderNavItem({
-            href: "/provider/dashboard",
-            label: "Provider Dashboard",
+            href: data.providerHref,
+            label: data.canAccessProviderMode ? "Provider Dashboard" : "Become a Provider",
           });
           return;
         }
