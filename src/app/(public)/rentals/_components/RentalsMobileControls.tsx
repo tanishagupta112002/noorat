@@ -113,7 +113,7 @@ export function RentalsMobileControls({
                 Filters
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="z-999 w-full sm:w-3/4 sm:max-w-sm p-0 pt-[env(safe-area-inset-top)] [&>button]:hidden">
+            <SheetContent side="left" className="w-full sm:w-3/4 sm:max-w-sm p-0 pt-[env(safe-area-inset-top)] [&>button]:hidden">
               <div className="flex h-full flex-col bg-background">
                 <div className="flex h-14 items-center justify-between border-b border-border px-3">
                   <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export function RentalsMobileControls({
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="z-60 rounded-t-2xl pb-[env(safe-area-inset-bottom)]">
+            <SheetContent side="bottom" className="rounded-t-2xl pb-[env(safe-area-inset-bottom)]">
               <SheetHeader>
                 <SheetTitle>Sort By</SheetTitle>
                 <SheetDescription>Choose one option.</SheetDescription>

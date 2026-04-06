@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 const listingCardSelect = {
 	id: true,
+	createdAt: true,
 	title: true,
 	category: true,
 	size: true,
@@ -28,6 +29,7 @@ const listingCardSelect = {
 
 export type PublicRental = {
 	id: string;
+	createdAt: Date;
 	title: string;
 	category: string;
 	occasion: string;
@@ -106,6 +108,7 @@ function toPublicRental(listing: ListingRow, stats?: ListingReviewStat): PublicR
 
 	return {
 		id: listing.id,
+		createdAt: listing.createdAt,
 		title: listing.title,
 		category: listing.category,
 		occasion: inferOccasionFromText(listing.title, listing.category),

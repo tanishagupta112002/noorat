@@ -436,7 +436,7 @@ function FilterContent({
         </div>
         <div className="space-y-2.5">
           {categoryVisibleItems.map((category) => (
-            <label key={category.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
+            <div key={category.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
               <Link href={buildToggleHref(currentParams, "category", category.label)} className="flex items-center gap-2 hover:text-foreground">
                 <input
                   type="checkbox"
@@ -447,7 +447,7 @@ function FilterContent({
                 <span className="line-clamp-1">{category.label}</span>
               </Link>
               <span className="shrink-0 text-xs text-muted-foreground">({category.count})</span>
-            </label>
+            </div>
           ))}
         </div>
       </div>
@@ -458,7 +458,7 @@ function FilterContent({
         </div>
         <div className="space-y-2.5">
           {boutiqueVisibleItems.map((boutique) => (
-            <label key={boutique.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
+            <div key={boutique.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
               <Link href={buildToggleHref(currentParams, "boutique", boutique.label)} className="flex items-center gap-2 hover:text-foreground">
                 <input
                   type="checkbox"
@@ -469,7 +469,7 @@ function FilterContent({
                 <span className="line-clamp-1">{boutique.label}</span>
               </Link>
               <span className="shrink-0 text-xs text-muted-foreground">({boutique.count})</span>
-            </label>
+            </div>
           ))}
         </div>
       </div>
@@ -480,7 +480,7 @@ function FilterContent({
         </div>
         <div className="space-y-2.5">
           {sizeVisibleItems.map((size) => (
-            <label key={size.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
+            <div key={size.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
               <Link href={buildToggleHref(currentParams, "size", size.label)} className="flex items-center gap-2 hover:text-foreground">
                 <input
                   type="checkbox"
@@ -491,7 +491,7 @@ function FilterContent({
                 {size.label}
               </Link>
               <span className="shrink-0 text-xs text-muted-foreground">({size.count})</span>
-            </label>
+            </div>
           ))}
         </div>
       </div>
@@ -502,7 +502,7 @@ function FilterContent({
         </div>
         <div className="space-y-2.5">
           {cityVisibleItems.map((city) => (
-            <label key={city.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
+            <div key={city.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
               <Link href={buildToggleHref(currentParams, "city", city.label)} className="flex items-center gap-2 hover:text-foreground">
                 <input
                   type="checkbox"
@@ -513,7 +513,7 @@ function FilterContent({
                 <span className="line-clamp-1">{city.label}</span>
               </Link>
               <span className="shrink-0 text-xs text-muted-foreground">({city.count})</span>
-            </label>
+            </div>
           ))}
         </div>
       </div>
@@ -524,7 +524,7 @@ function FilterContent({
         </div>
         <div className="space-y-2.5">
           {priceVisibleItems.map((range) => (
-            <label key={range.key} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
+            <div key={range.key} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
               <Link href={buildToggleHref(currentParams, "price", range.key)} className="flex items-center gap-2 hover:text-foreground">
                 <input
                   type="checkbox"
@@ -535,7 +535,7 @@ function FilterContent({
                 {range.label}
               </Link>
               <span className="shrink-0 text-xs text-muted-foreground">({range.count})</span>
-            </label>
+            </div>
           ))}
         </div>
       </div>
@@ -546,7 +546,7 @@ function FilterContent({
         </div>
         <div className="space-y-2.5">
           {colorVisibleItems.map((color) => (
-            <label key={color.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
+            <div key={color.label} className="flex items-center justify-between gap-2 text-sm text-foreground/80">
               <Link href={buildToggleHref(currentParams, "color", color.label)} className="flex items-center gap-2 hover:text-foreground">
                 <input
                   type="checkbox"
@@ -558,7 +558,7 @@ function FilterContent({
                 {color.label}
               </Link>
               <span className="shrink-0 text-xs text-muted-foreground">({color.count})</span>
-            </label>
+            </div>
           ))}
         </div>
       </div>
@@ -763,6 +763,21 @@ export default async function RentalsPage({ searchParams }: PageProps) {
       return true;
     })
     .sort((a, b) => {
+      if (selectedSort === "What's New") {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+      if (selectedSort === "Popularity") {
+        return b.reviewCount - a.reviewCount;
+      }
+      if (selectedSort === "Recommended") {
+        if (b.rating !== a.rating) {
+          return b.rating - a.rating;
+        }
+        if (b.reviewCount !== a.reviewCount) {
+          return b.reviewCount - a.reviewCount;
+        }
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
       if (selectedSort === "Price: Low to High") {
         return a.price - b.price;
       }
