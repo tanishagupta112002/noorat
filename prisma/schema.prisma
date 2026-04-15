@@ -195,6 +195,7 @@ model ProviderProfile {
   // Provider-owned commerce entities
   listings     Listing[] @relation("ProviderListings")
   providerOrders Order[] @relation("ProviderOrders")
+  customRequestBids CustomRequestProviderBid[]
 }
 
 enum ProviderType {
@@ -400,3 +401,100 @@ model CartItem {
   @@index([userId])
   @@index([listingId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🧠 AGENTIC AI SYSTEM: Custom Design Requests
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CustomRequest {
+  id              String   @id @default(uuid())
+  userId          String?  // nullable for guest submissions
+  
+  // Input metadata
+  inputType       String   // "text" | "image" | "sketch" | "cloth"
+  originalPrompt  String   @db.Text
+  uploadedImageUrl String?  // S3/Blob URL for image/sketch/cloth
+  
+  // AI generation metadata
+  previewSource   String   @default("pollinations-fallback") // "ai-gateway" | "huggingface" | "pollinations-fallback"
+  generationModel String?  // e.g. "sdxl", "controlnet-sketch", "inpaint"
+  
+  // Refinement tracking
+  refinementCount Int      @default(0)
+  maxRefinements  Int      @default(3)
+  currentPreviewUrl String?
+  
+  // Output metadata
+  occasion        String?
+  occasionDetected String? // auto-detected occasion
+  budget          Int?     // user's budget in INR
+  estimatedCost   Int?     // cost after provider quote
+  
+  // Provider assignment
+  selectedProviderId String?
+  providerType    String?  // "custom_stitch" | "rental" | "manufacturer"
+  providerQuoteJson String? @db.Text // JSON serialized quote
+  
+  // Status tracking
+  status          String   @default("generating") // "generating" | "preview_ready" | "refinement" | "provider_assigned" | "order_created"
+  
+  // Relationships
+  refinements     CustomRequestRefinement[]
+  providerBids    CustomRequestProviderBid[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, status, createdAt])
+  @@index([status, createdAt])
+}
+
+model CustomRequestRefinement {
+  id              String   @id @default(uuid())
+  requestId       String
+  request         CustomRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  
+  step            Int      // 1, 2, 3 (refinement number)
+  action          String   // "generate" | "inpaint" | "modify" | "try_on"
+  promptUsed      String   @db.Text
+  resultImageUrl  String
+  
+  userFeedback    String?  @db.Text // e.g. "more stylish", "neck deeper"
+  feedbackType    String?  // "style" | "cut" | "embroidery" | "color"
+  
+  // Quality scoring
+  userSatisfactionScore Int? // 1-5
+  confidenceScore Float?     // 0-1 from AI
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([requestId, step])
+}
+
+model CustomRequestProviderBid {
+  id              String   @id @default(uuid())
+  requestId       String
+  request         CustomRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  
+  providerId      String
+  provider        ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  providerType    String   // "custom_stitch" | "rental" | "manufacturer"
+  quotedPrice     Int
+  timeline        String   // e.g. "7-10 days"
+  deliveryNote    String?  @db.Text
+  customizations  String?  @db.Text // additional notes
+  
+  // Provider rating/trust
+  providerRating  Float?   // avg rating 1-5
+  completionRate  Float?   // % of completed orders
+  
+  status          String   @default("pending") // "pending" | "accepted" | "rejected" | "selected"
+  
+  createdAt       DateTime @default(now())
+  respondedAt     DateTime?
+  
+  @@index([requestId, status])
+  @@index([providerId, status])
+}
+

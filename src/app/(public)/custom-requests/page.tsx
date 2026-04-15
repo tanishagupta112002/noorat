@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { AgenticAIDesignStudio } from "./_components/agentic-ai-design-studio";
 import { customRequestPages } from "./content";
 
 const content = customRequestPages.index;
@@ -68,6 +69,8 @@ export default function CustomRequestsPage() {
       </section>
 
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-20 lg:py-16">
+        <AgenticAIDesignStudio />
+
         <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">{content.cardsTitle ?? "Use cases"}</h2>
         <div className="mt-6 grid gap-5 md:grid-cols-3">
           {content.cards?.map((card) => (
