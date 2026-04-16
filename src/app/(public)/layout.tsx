@@ -9,7 +9,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <Header />
       </Suspense>
-      <main id="main-content" className="min-h-screen pb-20 lg:pb-0">
+      <main id="main-content" className="pb-20 lg:pb-0">
         {children}
       </main>
       <Footer />

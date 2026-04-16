@@ -1,165 +1,82 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const bridalSubs = [
-  { label: "Bridal Lehenga" },
-  { label: "Designer Saree" },
-  { label: "Bridal Gown" },
-] as const;
-
-const westernSubs = [
-  { label: "Cocktail Gown" },
-  { label: "Bodycon Dress" },
-  { label: "Maxi Dress" },
-] as const;
-
-const traditionalSubs = [
-  { label: "Ethnic Lehenga" },
-  { label: "Festive Saree" },
-  { label: "Anarkali" },
+const categories = [
+  {
+    id: "bridal",
+    title: "Bridal",
+    subtitle: "Celebrate Your Day",
+    image: "/images/hero/i1.png",
+    href: "/rentals/bridal",
+    cta: "Shop Now",
+  },
+  {
+    id: "western",
+    title: "Western",
+    subtitle: "Modern & Chic",
+    image: "/images/hero/i2.png",
+    href: "/rentals/western",
+    cta: "Explore",
+  },
+  {
+    id: "traditional",
+    title: "Traditional",
+    subtitle: "Timeless Heritage",
+    image: "/images/hero/i3.png",
+    href: "/rentals/ethnic",
+    cta: "Discover",
+  },
 ] as const;
 
 export default function CategoryStrip() {
   return (
-    <section className="w-full bg-white/50 px-3 py-10 lg:px-20 lg:py-14">
-      <div className="mx-auto max-w-345">
-        <div className="text-center">
-          <h2 className="text-4xl font-semibold tracking-[0.04em] text-foreground">Signature Styles</h2>
-          <p className="mt-2 text-sm tracking-[0.12em] text-muted-foreground sm:text-base">
-            Pick your vibe for the event: bold bridal, chic western, or timeless traditional.
-          </p>
-          <div className="mx-auto mt-5 h-1 w-16 rounded-full bg-foreground/70" />
-        </div>
+    <section className="w-full bg-white/50 px-3 py-8 lg:px-20 lg:py-12">
+      {/* Header */}
+      <div className="mx-auto max-w-4xl text-center">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+          Signature Styles
+        </h2>
+        <p className="mt-2 text-xs tracking-wide text-muted-foreground sm:text-sm lg:text-base">
+          Pick your vibe for the event: bold bridal, chic western, or timeless traditional.
+        </p>
+        <div className="mx-auto mt-4 h-px w-12 bg-foreground/70 lg:mt-5" />
+      </div>
 
-        <div className="mt-14 space-y-12">
-          {/* Bridal - Left Text, Right Image */}
-          <div className="grid items-center justify-center gap-6 sm:gap-8 lg:grid-cols-[0.95fr_1.5fr]">
-            <div className="mx-auto w-full max-w-md text-center">
-              <Link
-                href="/rentals/bridal"
-                className="block text-2xl font-semibold text-foreground transition hover:opacity-75 sm:text-3xl lg:text-4xl"
-              >
-                Bridal
-              </Link>
-              <p className="mt-2 text-sm uppercase tracking-[0.18em] text-muted-foreground">Celebrate Your Day</p>
-              <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-3 sm:gap-x-4 sm:gap-y-4 lg:grid-cols-1">
-                {bridalSubs.map((sub) => (
-                  <Link
-                    key={sub.label}
-                    href="/rentals/bridal"
-                    className="group block py-1.5 transition hover:opacity-75"
-                  >
-                    <p className="text-lg font-semibold text-foreground sm:text-xl">
-                      {sub.label}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-              <Link
-                href="/rentals/bridal"
-                className="mt-6 inline-flex min-h-12 min-w-44 items-center justify-center bg-foreground px-6 text-lg font-semibold text-primary-foreground transition hover:opacity-90 sm:mt-8 sm:min-h-14 sm:text-xl"
-              >
-                Shop Now
-              </Link>
-            </div>
+      {/* Horizontal Scroll Carousel */}
+      <div className="mt-6 overflow-x-auto lg:mt-8">
+        <div className="flex gap-3 pb-2 sm:gap-4 lg:gap-6">
+          {categories.map((category) => (
             <Link
-              href="/rentals/bridal"
-              className="group relative block h-60 overflow-hidden sm:h-80 lg:h-115"
+              key={category.id}
+              href={category.href}
+              className="group relative min-w-70 shrink-0 overflow-hidden rounded-lg sm:min-w-90 lg:min-w-105"
             >
-              <Image
-                src="/images/hero/i1.png"
-                alt="Bridal"
-                fill
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
-              />
-            </Link>
-          </div>
+              {/* Image */}
+              <div className="relative h-48 w-full overflow-hidden bg-gray-100 sm:h-64 lg:h-80">
+                <Image
+                  src={category.image}
+                  alt={category.title}
+                  fill
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
+              </div>
 
-          {/* Western - Right Image, Left Text */}
-          <div className="grid items-center gap-6 sm:gap-8 lg:grid-cols-[1.5fr_0.95fr]">
-            <Link
-              href="/rentals/western"
-              className="group relative block h-60 overflow-hidden sm:h-80 lg:h-115"
-            >
-              <Image
-                src="/images/hero/i2.png"
-                alt="Western"
-                fill
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
-              />
-            </Link>
-            <div className="mx-auto w-full max-w-md text-center">
-              <Link
-                href="/rentals/western"
-                className="block px-3 py-1 text-2xl font-semibold text-foreground transition hover:opacity-75 sm:text-3xl lg:text-4xl"
-              >
-                Western
-              </Link>
-              <p className="mt-2 text-sm uppercase tracking-[0.18em] text-muted-foreground">Modern & Chic</p>
-              <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-3 sm:gap-x-4 sm:gap-y-4 lg:grid-cols-1">
-                {westernSubs.map((sub) => (
-                  <Link
-                    key={sub.label}
-                    href="/rentals/western"
-                    className="group block py-1.5 transition hover:opacity-75"
-                  >
-                    <p className="text-lg font-semibold text-foreground sm:text-xl">
-                      {sub.label}
-                    </p>
-                  </Link>
-                ))}
+              {/* Text Overlay - Centered Bottom */}
+              <div className="absolute inset-0 flex flex-col items-center justify-end bg-linear-to-t from-black/60 via-transparent to-transparent px-4 py-4 sm:py-6 lg:py-8">
+                <h3 className="text-xl font-bold text-white sm:text-2xl lg:text-3xl">
+                  {category.title}
+                </h3>
+                <p className="mt-1 text-xs uppercase tracking-widest text-white/80 sm:text-sm lg:mt-2">
+                  {category.subtitle}
+                </p>
+                <button
+                  className="mt-3 inline-flex bg-white px-4 py-2 text-xs font-semibold text-foreground transition hover:bg-white/90 sm:mt-4 sm:px-6 sm:py-2.5 sm:text-sm lg:mt-5 lg:px-8 lg:py-3 lg:text-base"
+                >
+                  {category.cta}
+                </button>
               </div>
-              <Link
-                href="/rentals/western"
-                className="mt-6 inline-flex min-h-12 min-w-44 items-center justify-center bg-foreground px-6 text-lg font-semibold text-primary-foreground transition hover:opacity-90 sm:mt-8 sm:min-h-14 sm:text-xl"
-              >
-                Explore
-              </Link>
-            </div>
-          </div>
-
-          {/* Traditional - Left Text, Right Image */}
-          <div className="grid items-center gap-6 sm:gap-8 lg:grid-cols-[0.95fr_1.5fr]">
-            <div className="mx-auto w-full max-w-md text-center">
-              <Link
-                href="/rentals/ethnic"
-                className="block text-2xl font-semibold text-foreground transition hover:opacity-75 sm:text-3xl lg:text-4xl"
-              >
-                Traditional
-              </Link>
-              <p className="mt-2 text-sm uppercase tracking-[0.18em] text-muted-foreground">Timeless Heritage</p>
-              <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-3 sm:gap-x-4 sm:gap-y-4 lg:grid-cols-1">
-                {traditionalSubs.map((sub) => (
-                  <Link
-                    key={sub.label}
-                    href="/rentals/ethnic"
-                    className="group block py-1.5 transition hover:opacity-75"
-                  >
-                    <p className="text-lg font-semibold text-foreground sm:text-xl">
-                      {sub.label}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-              <Link
-                href="/rentals/ethnic"
-                className="mt-6 inline-flex min-h-12 min-w-44 items-center justify-center bg-foreground px-6 text-lg font-semibold text-primary-foreground transition hover:opacity-90 sm:mt-8 sm:min-h-14 sm:text-xl"
-              >
-                Discover
-              </Link>
-            </div>
-            <Link
-              href="/rentals/ethnic"
-              className="group relative block h-60 overflow-hidden sm:h-80 lg:h-115"
-            >
-              <Image
-                src="/images/hero/i3.png"
-                alt="Traditional"
-                fill
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
-              />
             </Link>
-          </div>
+          ))}
         </div>
       </div>
     </section>

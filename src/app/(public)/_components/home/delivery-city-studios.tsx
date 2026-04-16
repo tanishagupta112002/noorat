@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Star } from "lucide-react";
+import { ArrowRight, MapPin, Star } from "lucide-react";
 
 import { getDesignerStudios } from "@/app/(public)/designer-studios/_services/studio-discovery";
 
@@ -14,11 +14,13 @@ function groupByCity(
   const byCity = new Map<string, CityGroup>();
 
   for (const studio of studios) {
-    const key = (studio.city || "Other").trim() || "Other";
+    const rawCity = (studio.city || "Other").trim() || "Other";
+    // Normalize to lowercase for grouping, but keep original display name
+    const key = rawCity.toLowerCase();
     const existing = byCity.get(key);
 
     if (!existing) {
-      byCity.set(key, { city: key, studios: [studio] });
+      byCity.set(key, { city: rawCity, studios: [studio] });
       continue;
     }
 
@@ -36,7 +38,7 @@ function groupByCity(
 
 export default async function DeliveryCityStudios() {
   const result = await getDesignerStudios("all");
-  const cityGroups = groupByCity(result.studios).slice(0, 8);
+  const cityGroups = groupByCity(result.studios).slice(0, 3);
 
   return (
     <section className="w-full bg-white px-3 py-6 lg:px-20 lg:py-10">
@@ -56,43 +58,46 @@ export default async function DeliveryCityStudios() {
           </Link>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-8 grid grid-cols-3 gap-2">
           {cityGroups.map((group) => (
-            <article key={group.city} className="border border-border/60 bg-white p-4">
-              <div className="mb-3 border-b border-border/50 pb-2">
-                <h3 className="inline-flex items-center gap-1.5 text-xl font-semibold text-foreground">
-                  <MapPin className="h-4 w-4 text-primary" aria-hidden="true" /> {group.city}
+            <article key={group.city} className="border border-border/60 bg-white p-2 sm:p-3">
+              <div className="mb-2 border-b border-border/50 pb-1.5">
+                <h3 className="inline-flex items-center gap-1 text-sm font-semibold text-foreground sm:text-base">
+                  <MapPin className="h-3 w-3 shrink-0 text-primary sm:h-4 sm:w-4" aria-hidden="true" /> <span className="truncate">{group.city}</span>
                 </h3>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  {group.studios.length} studios available
+                <p className="mt-0.5 text-xs font-semibold uppercase tracking-tight text-muted-foreground">
+                  {group.studios.length} studios
                 </p>
               </div>
 
-              <ul className="space-y-2">
-                {group.studios.slice(0, 4).map((studio) => (
+              <ul className="space-y-1">
+                {group.studios.slice(0, 3).map((studio) => (
                   <li key={studio.providerSlug}>
                     <Link
                       href={`/designer-studios/provider-profile/${studio.providerSlug}`}
-                      className="flex items-center justify-between gap-3 py-1 text-sm transition hover:text-primary"
+                      className="flex items-center justify-between gap-2 py-0.5 text-xs transition hover:text-primary sm:text-sm"
                     >
-                      <span className="line-clamp-1 text-foreground">{studio.providerName}</span>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                      <span className="line-clamp-1 truncate text-foreground">{studio.providerName}</span>
+                      <span className="inline-flex items-center gap-0.5 shrink-0 text-xs font-semibold text-muted-foreground">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" aria-hidden="true" />
                         {studio.avgRating.toFixed(1)}
                       </span>
                     </Link>
                   </li>
                 ))}
               </ul>
-
-              <Link
-                href="/designer-studios/nearby"
-                className="mt-4 inline-flex text-xs font-semibold uppercase tracking-[0.08em] text-primary hover:underline"
-              >
-                View more in {group.city}
-              </Link>
             </article>
           ))}
+        </div>
+
+        <div className="mt-4 text-center">
+          <Link
+            href="/designer-studios/nearby"
+            className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-tight text-primary underline underline-offset-4"
+          >
+            View more
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </section>

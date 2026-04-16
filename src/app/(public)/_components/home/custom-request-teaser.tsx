@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 
 export default function CustomRequestTeaser() {
   return (
-    <section className="w-full bg-white/50 pb-8 px-3 lg:px-20">
+    <section className="w-full bg-white/50 px-4 pb-8 lg:px-20">
       <div className="relative overflow-hidden px-5 py-7 text-center sm:px-8 sm:py-8 lg:py-9">
         <div
           className="pointer-events-none absolute -left-16 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-primary/10 blur-2xl"
@@ -28,7 +28,7 @@ export default function CustomRequestTeaser() {
           studios and tailored suggestions.
         </p>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center">
           <Link
             href="/custom-requests"
             className="inline-flex h-12 items-center justify-center bg-foreground px-6 text-sm font-bold uppercase tracking-[0.06em] text-primary-foreground transition hover:opacity-90"

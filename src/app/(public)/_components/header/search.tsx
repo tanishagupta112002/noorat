@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
@@ -46,6 +46,9 @@ export default function Search({ mobileLogoSrc, mobilePlaceholder }: SearchProps
   const hasMobileLogo = Boolean(mobileLogoSrc);
   const [currentPlaceholder, setCurrentPlaceholder] = useState(ROTATING_PLACEHOLDERS[0]);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const defaultQuery = useMemo(() => {
     if (pathname !== "/rentals") return "";
@@ -81,10 +84,27 @@ export default function Search({ mobileLogoSrc, mobilePlaceholder }: SearchProps
     };
   }, [hasMobileLogo]);
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Submit the form programmatically
+    if (formRef.current) {
+      formRef.current.submit();
+    }
+    // Clear input after brief delay to ensure submission
+    setTimeout(() => {
+      setInputValue("");
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+    }, 50);
+  };
+
   return (
     <>
       <style>{animationStyle}</style>
       <form
+        ref={formRef}
+        onSubmit={handleSubmit}
         action="/rentals"
         method="get"
         className={hasMobileLogo
@@ -101,18 +121,20 @@ export default function Search({ mobileLogoSrc, mobilePlaceholder }: SearchProps
             className="pointer-events-none absolute left-0 top-1/2 h-6 w-auto -translate-y-1/2 object-contain z-10"
           />
         ) : null}
-        <div className="relative flex-1 overflow-hidden">
+        <div className="relative flex-1 overflow-visible">
           <Input
+            ref={inputRef}
             type="text"
             name="q"
-            defaultValue={defaultQuery}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             placeholder={hasMobileLogo ? "" : (mobilePlaceholder ?? "Search outfits, designer studios and more...")}
             className={hasMobileLogo
-              ? "h-8 border-none bg-white pl-10 text-sm shadow-none focus:ring-0 focus-visible:ring-0"
+              ? "h-8 border-none bg-white pl-10 pr-1 text-xs shadow-none focus:ring-0 focus-visible:ring-0"
               : "h-7 text-xs border-none bg-white shadow-none focus:ring-0 focus-visible:ring-0"}
           />
-          {hasMobileLogo && (
-            <span className={`absolute left-10 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground pointer-events-none whitespace-nowrap ${
+          {hasMobileLogo && !inputValue && (
+            <span className={`absolute left-10 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground pointer-events-none truncate transition-opacity duration-200 ${
               isAnimating ? 'placeholder-animate' : ''
             }`}>
               {currentPlaceholder}

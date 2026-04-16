@@ -8,6 +8,7 @@ export type StudioSummary = {
   city: string;
   state: string;
   pincode: string;
+  providerType: "BOUTIQUE" | "RENTAL" | null;
   itemCount: number;
   avgRating: number;
   reviewCount: number;
@@ -66,6 +67,7 @@ function buildStudioSummariesFromRentals(rentals: PublicRental[]) {
         city: item.city,
         state: item.providerState || "",
         pincode: itemPincode,
+        providerType: item.providerType ?? null,
         itemCount: 1,
         avgRating: item.rating,
         reviewCount: item.reviewCount,
@@ -118,7 +120,7 @@ function applyModeFilter(mode: StudioFilterMode, input: StudioSummary[]) {
   const studios = [...input];
 
   if (mode === "top-rated") {
-    return sortStudios(studios).filter((item) => item.avgRating >= 4);
+    return sortStudios(studios).filter((item) => item.providerType === "BOUTIQUE");
   }
 
   if (mode === "bridal") {

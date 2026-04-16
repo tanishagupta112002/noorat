@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Coins, Scissors, Store, Users } from "lucide-react";
+import { ArrowRight, CheckCircle2, Coins, Scissors, Store, Users, Building2, Shirt } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,12 +18,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-export const metadata: Metadata = {
-  title: "Become a Provider on noorat | noorat",
-  description:
-    "Learn why boutiques and rental shops should list on noorat, how the provider flow works and what the onboarding path looks like.",
-};
 
 const providerFaqs = [
   {
@@ -47,7 +42,15 @@ const providerFaqs = [
   },
 ];
 
+"use client";
+
+import { useState } from "react";
+
+type ProviderType = "boutique" | "rental" | null;
+
 export default function ProviderInfoPage() {
+  const [selectedType, setSelectedType] = useState<ProviderType>(null);
+
   return (
     <div className="bg-background">
       <section className="relative overflow-hidden border-b border-border/70 bg-linear-to-br from-background via-orange-50/70 to-rose-100/60">
@@ -104,38 +107,181 @@ export default function ProviderInfoPage() {
         </div>
       </section>
 
+      {/* Provider Type Selector */}
+      <section className="border-b border-border/70 bg-gradient-to-r from-slate-50/50 to-white">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-20">
+          <div className="text-center mb-8">
+            <h2 className="font-playfair text-2xl font-semibold sm:text-3xl mb-2">What's your business?</h2>
+            <p className="text-sm text-muted-foreground">Each path is optimized for different business models</p>
+          </div>
+          
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Boutique/Designer Card */}
+            <Card 
+              className={`rounded-2xl cursor-pointer transition-all ${
+                selectedType === "boutique" 
+                  ? "border-primary bg-primary/5 shadow-lg" 
+                  : "border-border/50 hover:border-border"
+              }`}
+              onClick={() => setSelectedType(selectedType === "boutique" ? null : "boutique")}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="rounded-full bg-purple-100 p-3">
+                    <Shirt className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2">Designer Studios & Boutiques</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Custom stitched designs, bridal wear, bespoke creations
+                    </p>
+                    <ul className="space-y-2 text-xs">
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">✓</span> Accept AI custom requests
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">✓</span> Showcase your custom work
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">✓</span> Build your brand presence
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Rental Shop Card */}
+            <Card 
+              className={`rounded-2xl cursor-pointer transition-all ${
+                selectedType === "rental" 
+                  ? "border-primary bg-primary/5 shadow-lg" 
+                  : "border-border/50 hover:border-border"
+              }`}
+              onClick={() => setSelectedType(selectedType === "rental" ? null : "rental")}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="rounded-full bg-orange-100 p-3">
+                    <Building2 className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2">Rental Shops</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Lehenga rentals, saree rentals, party wear inventory
+                    </p>
+                    <ul className="space-y-2 text-xs">
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">✓</span> Show on category pages
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">✓</span> Get nearby discovery
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-primary">✓</span> Maximize inventory usage
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <div className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-14 sm:px-6 lg:px-20 lg:py-18">
         <section id="benefits" className="space-y-6 scroll-mt-32">
           <div className="max-w-2xl space-y-2">
-            <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">Why become a provider?</h2>
+            <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">
+              {selectedType === null 
+                ? "Why become a provider?" 
+                : selectedType === "boutique" 
+                ? "Why boutiques win on noorat"
+                : "Why rental shops win on noorat"}
+            </h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              noorat gives customers clear public routes. Providers benefit because those routes are already organized around how customers actually decide.
+              {selectedType === null
+                ? "noorat gives customers clear public routes. Providers benefit because those routes are already organized around how customers actually decide."
+                : selectedType === "boutique"
+                ? "You get customers with clearer briefs, better event context, and readiness to commission custom work."
+                : "You get customers shopping by category with specific needs - making conversion easier than generic social browsing."}
             </p>
           </div>
 
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              {
-                icon: Users,
-                title: "Meet intent-led customers",
-                description: "Customers arrive from category pages, nearby designer pages and custom request flows with clearer intent than generic social browsing.",
-              },
-              {
-                icon: Store,
-                title: "Build a stronger storefront",
-                description: "Your boutique or rental house becomes easier to discover through dedicated provider-facing and customer-facing routes.",
-              },
-              {
-                icon: Coins,
-                title: "Earn from idle inventory",
-                description: "List wedding, party and festive outfits that would otherwise stay underused between seasons.",
-              },
-              {
-                icon: Scissors,
-                title: "Support custom work too",
-                description: "Boutiques can also benefit from customers coming in with clearer briefs through AI custom requests.",
-              },
-            ].map((item) => {
+            {(selectedType === null ? (
+              // Show all benefits for unselected
+              [
+                {
+                  icon: Users,
+                  title: "Meet intent-led customers",
+                  description: "Customers arrive from category pages, nearby designer pages and custom request flows with clearer intent than generic social browsing.",
+                },
+                {
+                  icon: Store,
+                  title: "Build a stronger storefront",
+                  description: "Your boutique or rental house becomes easier to discover through dedicated provider-facing and customer-facing routes.",
+                },
+                {
+                  icon: Coins,
+                  title: "Earn from idle inventory",
+                  description: "List wedding, party and festive outfits that would otherwise stay underused between seasons.",
+                },
+                {
+                  icon: Scissors,
+                  title: "Support custom work too",
+                  description: "Boutiques can also benefit from customers coming in with clearer briefs through AI custom requests.",
+                },
+              ]
+            ) : selectedType === "boutique" ? (
+              // Boutique-specific benefits
+              [
+                {
+                  icon: Users,
+                  title: "Clearer briefs from customers",
+                  description: "Customers arrive through custom requests with event details, budget and inspiration already established.",
+                },
+                {
+                  icon: Scissors,
+                  title: "Specialize in custom work",
+                  description: "AI custom requests attract customers ready to commission bespoke designs and custom stitching.",
+                },
+                {
+                  icon: Store,
+                  title: "Build brand presence",
+                  description: "Your boutique becomes discoverable through designer studio routes and custom request flows.",
+                },
+                {
+                  icon: Coins,
+                  title: "Higher conversion rates",
+                  description: "Customers with established budgets and clear requirements are more likely to confirm orders.",
+                },
+              ]
+            ) : (
+              // Rental-specific benefits
+              [
+                {
+                  icon: Store,
+                  title: "Category discovery",
+                  description: "Show up on western, ethnic, bridal and party wear category pages where customers actively shop.",
+                },
+                {
+                  icon: Users,
+                  title: "Nearby customer routes",
+                  description: "Customers find you based on location and proximity, making local discovery a key advantage.",
+                },
+                {
+                  icon: Coins,
+                  title: "Maximize inventory usage",
+                  description: "Every outfit listed has multiple chances to be rented throughout the season.",
+                },
+                {
+                  icon: CheckCircle2,
+                  title: "Volume and scale",
+                  description: "Higher transaction volume through faster rental cycles compared to custom work.",
+                },
+              ]
+            )).map((item) => {
               const Icon = item.icon;
 
               return (
@@ -169,11 +315,15 @@ export default function ProviderInfoPage() {
               },
               {
                 title: "Add your first listing",
-                items: ["Upload outfit images", "Set category and size", "Add pricing", "Publish available inventory"],
+                items: selectedType === "boutique" 
+                  ? ["Upload design samples", "Set service type", "Define pricing", "Publish portfolio"]
+                  : ["Upload outfit images", "Set category and size", "Add pricing", "Publish available inventory"],
               },
               {
                 title: "Receive customer demand",
-                items: ["Show up on public routes", "Handle local inquiries", "Convert rental leads", "Grow repeat visibility"],
+                items: selectedType === "boutique"
+                  ? ["Show up on custom requests", "Handle design inquiries", "Complete projects", "Build repeat visibility"]
+                  : ["Show up on public routes", "Handle local inquiries", "Convert rental leads", "Grow repeat visibility"],
               },
             ].map((column) => (
               <Card key={column.title} className="rounded-3xl border-border/70 shadow-sm">
@@ -195,77 +345,93 @@ export default function ProviderInfoPage() {
           </div>
         </section>
 
-        <section id="boutique" className="space-y-6 scroll-mt-32">
-          <div className="max-w-2xl space-y-2">
-            <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">For boutique designers</h2>
-            <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              Boutique-led providers benefit most when customers come through custom requests, bridal routes and category pages that already frame the event and silhouette.
-            </p>
-          </div>
+        {/* Show relevant section based on selection */}
+        {(selectedType === null || selectedType === "boutique") && (
+          <section id="boutique" className="space-y-6 scroll-mt-32">
+            <div className="max-w-2xl space-y-2">
+              <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">For boutique designers</h2>
+              <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+                Boutique-led providers benefit most when customers come through custom requests, bridal routes and category pages that already frame the event and silhouette.
+              </p>
+            </div>
 
-          <Card className="rounded-[2rem] border-border/70 bg-linear-to-r from-orange-100/70 via-white/90 to-rose-100/80 shadow-sm">
-            <CardContent className="grid gap-6 p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-              <div className="space-y-4">
-                <h3 className="text-2xl font-semibold">Use noorat as a clearer intake funnel</h3>
-                <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                  Customers can arrive with inspiration, event details and category intent already established. That makes it easier to quote, accept or adapt custom requests without repeating the same discovery conversation from scratch.
-                </p>
-              </div>
-              <ul className="space-y-3">
-                {[
-                  "Great fit for custom stitched looks",
-                  "Useful for bridal and premium festive work",
-                  "Better lead quality from clarified briefs",
-                  "Can convert inspiration into paid work faster",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm leading-6 text-muted-foreground">
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </section>
+            <Card className="rounded-[2rem] border-border/70 bg-linear-to-r from-orange-100/70 via-white/90 to-rose-100/80 shadow-sm">
+              <CardContent className="grid gap-6 p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-semibold">Use noorat as a clearer intake funnel</h3>
+                  <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+                    Customers can arrive with inspiration, event details and category intent already established. That makes it easier to quote, accept or adapt custom requests without repeating the same discovery conversation from scratch.
+                  </p>
+                </div>
+                <ul className="space-y-3">
+                  {[
+                    "Great fit for custom stitched looks",
+                    "Useful for bridal and premium festive work",
+                    "Better lead quality from clarified briefs",
+                    "Can convert inspiration into paid work faster",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3 text-sm leading-6 text-muted-foreground">
+                      <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </section>
+        )}
 
-        <section id="rental" className="space-y-6 scroll-mt-32">
-          <div className="max-w-2xl space-y-2">
-            <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">For rental shops</h2>
-            <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              Rental-first providers win when customers can land directly on category pages, nearby designer routes and budget-friendly discovery paths without empty pages in between.
-            </p>
-          </div>
+        {(selectedType === null || selectedType === "rental") && (
+          <section id="rental" className="space-y-6 scroll-mt-32">
+            <div className="max-w-2xl space-y-2">
+              <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">For rental shops</h2>
+              <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+                Rental-first providers win when customers can land directly on category pages, nearby designer routes and budget-friendly discovery paths without empty pages in between.
+              </p>
+            </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            {[
-              {
-                title: "Turn inventory into discovery",
-                description: "Category routes such as western, ethnic, bridal and party wear help customers find you through the exact type of outfit they want.",
-              },
-              {
-                title: "Strengthen local advantage",
-                description: "Nearby designer pages make your location, pickup convenience and fit support part of the decision, not an afterthought.",
-              },
-            ].map((item) => (
-              <Card key={item.title} className="rounded-3xl border-border/70 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-xl">{item.title}</CardTitle>
-                  <CardDescription className="text-sm leading-6">{item.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
+            <div className="grid gap-5 md:grid-cols-2">
+              {[
+                {
+                  title: "Turn inventory into discovery",
+                  description: "Category routes such as western, ethnic, bridal and party wear help customers find you through the exact type of outfit they want.",
+                },
+                {
+                  title: "Strengthen local advantage",
+                  description: "Nearby designer pages make your location, pickup convenience and fit support part of the decision, not an afterthought.",
+                },
+              ].map((item) => (
+                <Card key={item.title} className="rounded-3xl border-border/70 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-xl">{item.title}</CardTitle>
+                    <CardDescription className="text-sm leading-6">{item.description}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section id="faq" className="space-y-6 scroll-mt-32">
           <div className="max-w-2xl space-y-2">
-            <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">Provider FAQs</h2>
+            <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">
+              {selectedType === "boutique" 
+                ? "Boutique FAQs"
+                : selectedType === "rental"
+                ? "Rental FAQs"
+                : "Provider FAQs"}
+            </h2>
           </div>
 
           <Card className="rounded-3xl border-border/70 shadow-sm">
             <CardContent className="p-6 sm:p-8">
               <Accordion type="single" collapsible className="w-full">
-                {providerFaqs.map((faq) => (
+                {(selectedType === "boutique" 
+                  ? providerFaqs.slice(0, 2).concat(providerFaqs.slice(-1))
+                  : selectedType === "rental"
+                  ? providerFaqs.slice(1)
+                  : providerFaqs
+                ).map((faq) => (
                   <AccordionItem key={faq.question} value={faq.question}>
                     <AccordionTrigger className="text-base font-medium">{faq.question}</AccordionTrigger>
                     <AccordionContent className="text-sm leading-6 text-muted-foreground">
@@ -282,9 +448,19 @@ export default function ProviderInfoPage() {
           <Card className="overflow-hidden rounded-[2rem] border-border/70 bg-linear-to-r from-orange-100/70 via-white/90 to-rose-100/80 shadow-sm">
             <CardContent className="flex flex-col gap-6 p-8 sm:p-10 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl space-y-3">
-                <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">Start building your provider side now</h2>
+                <h2 className="font-playfair text-3xl font-semibold sm:text-4xl">
+                  {selectedType === null
+                    ? "Start building your provider side now"
+                    : selectedType === "boutique"
+                    ? "Ready to accept custom briefs?"
+                    : "Ready to turn inventory into revenue?"}
+                </h2>
                 <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                  The customer-facing public routes are in place. If your store is ready to convert that traffic into bookings, move straight into onboarding.
+                  {selectedType === null
+                    ? "The customer-facing public routes are in place. If your store is ready to convert that traffic into bookings, move straight into onboarding."
+                    : selectedType === "boutique"
+                    ? "Accept clearer custom requests with established briefs, budgets and timelines. Get started with your boutique setup today."
+                    : "Get your rental inventory in front of customers actively searching by category and location. Start with your first listing now."}
                 </p>
               </div>
 

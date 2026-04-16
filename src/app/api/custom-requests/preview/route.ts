@@ -128,6 +128,9 @@ async function uploadSourceImages(files: File[]) {
 
 type PreviewSource = "ai-gateway" | "pollinations-fallback";
 
+const NO_FACE_DIRECTIVE =
+  "Strict framing rule: show outfit only in a neck-down fashion catalog composition; no human face, no head, no eyes, no nose, no mouth, no portrait, no selfie.";
+
 async function generatePreviewImage(prompt: string, occasion: string, sourceUrls: string[]) {
   const gatewayKey = process.env.AI_GATEWAY_API_KEY?.trim();
 
@@ -149,7 +152,7 @@ async function generatePreviewImage(prompt: string, occasion: string, sourceUrls
           model,
           size: "1024x1024",
           n: 1,
-          prompt: `Create a realistic fashion concept image for an Indian occasion outfit. Occasion: ${occasion}. User brief: ${prompt}. ${referenceText}. Clean studio background, full outfit visible, premium quality.`,
+          prompt: `Create a realistic fashion concept image for an Indian occasion outfit. Occasion: ${occasion}. User brief: ${prompt}. ${referenceText}. Clean studio background, full outfit visible, premium quality. ${NO_FACE_DIRECTIVE}`,
         }),
       });
 
@@ -178,7 +181,9 @@ async function generatePreviewImage(prompt: string, occasion: string, sourceUrls
     }
   }
 
-  const fallbackPrompt = encodeURIComponent(`Indian fashion design preview, ${occasion}, ${prompt}`);
+  const fallbackPrompt = encodeURIComponent(
+    `Indian fashion design preview, ${occasion}, ${prompt}. ${NO_FACE_DIRECTIVE}`,
+  );
   return {
     url: `https://image.pollinations.ai/prompt/${fallbackPrompt}?width=1024&height=1024&nologo=true`,
     source: "pollinations-fallback" as PreviewSource,

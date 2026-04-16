@@ -52,7 +52,7 @@ export function NearbySearchForm({ variant = "hero", selectedCityName }: NearbyS
         <section className={`relative text-center ${isLoading ? "opacity-50" : ""}`}>
           <div className="mx-auto max-w-2xl space-y-5 sm:space-y-6">
             <div className="space-y-3">
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/45 bg-white/18 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white shadow-sm backdrop-blur-sm">
+              <p className="inline-flex mt-20 items-center gap-2 rounded-full border border-white/45 bg-white/18 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white shadow-sm backdrop-blur-sm">
                 <Zap className="h-3.5 w-3.5 fill-current" />
                 Same-Day Delivery
               </p>

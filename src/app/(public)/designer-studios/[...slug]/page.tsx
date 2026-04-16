@@ -113,32 +113,28 @@ export default async function DesignerStudiosSlugPage({ params, searchParams }: 
   const hasSelectedLocation = Boolean(query.location);
 
   return (
-    <div className="min-h-screen bg-white text-foreground">
+    <div
+      className={`text-foreground ${isNearbyMode && !hasSelectedLocation ? "min-h-0 bg-[#090a0e]" : "min-h-screen bg-white"}`}
+    >
       {/* ── Nearby page: keep hero always visible ─────────────────────────────── */}
       {isNearbyMode ? (
-        <div 
-          className="relative w-full min-h-[72vh] flex flex-col items-center justify-start px-4 pt-24 sm:pt-28 overflow-hidden"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(9, 10, 14, 0.72), rgba(9, 10, 14, 0.72)),
-              linear-gradient(to bottom, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.2) 24%, rgba(0, 0, 0, 0.2) 76%, rgba(0, 0, 0, 0.58) 100%),
-              url('/images/city.png')
-            `,
-            backgroundSize: "cover, cover, 100% 100%",
-            backgroundPosition: "center, center, center bottom",
-            backgroundRepeat: "no-repeat",
-          }}
-        >
+        <div className="relative fl
+        
+        ex h-130 w-full justify-center overflow-hidden bg-[#090a0e] px-4 pt-10 sm:h-155 sm:pt-16 lg:h-175">
+          <div className="absolute inset-0 bg-[url('/images/city.png')] bg-cover bg-center md:bg-bottom" />
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/20 to-black/60" />
+
           {/* Decorative dots pattern */}
-          <div 
+          <div
             className="absolute inset-0 opacity-20"
-            style={{ 
+            style={{
               backgroundImage: "radial-gradient(circle, var(--primary) 1px, transparent 1px)",
-              backgroundSize: "40px 40px"
+              backgroundSize: "40px 40px",
             }}
           />
-          
-          <div className="relative z-10 w-full max-w-3xl">
+
+          <div className="relative z-10 mx-auto w-full max-w-3xl">
             <NearbySearchForm variant="hero" selectedCityName={query.location || undefined} />
           </div>
         </div>
@@ -211,7 +207,15 @@ export default async function DesignerStudiosSlugPage({ params, searchParams }: 
           ) : (
             <Card className="mb-6 rounded-2xl border-dashed border-border/80 bg-muted/20">
               <CardContent className="py-6 text-sm text-muted-foreground">
-                No nearby studios found for this location yet. Try another city or pin code, or switch off same-day only.
+                {config.mode === "nearby"
+                  ? "No nearby studios found for this location yet. Try another city or pin code, or switch off same-day only."
+                  : config.mode === "top-rated"
+                  ? "No top rated boutiques found yet."
+                  : config.mode === "bridal"
+                  ? "No bridal specialists found yet. Studios focused on weddings and bridal wear will appear here."
+                  : config.mode === "budget"
+                  ? "No budget studios found at the moment. Check back later."
+                  : "No studios found at the moment."}
               </CardContent>
             </Card>
           )}

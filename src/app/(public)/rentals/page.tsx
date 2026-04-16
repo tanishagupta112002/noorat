@@ -587,7 +587,7 @@ export default async function RentalsPage({ searchParams }: PageProps) {
   const rawParams = await searchParams;
   const currentParams = parseCurrentParams(rawParams);
 
-  const selectedCategories = toArray(rawParams.category);
+  let selectedCategories = toArray(rawParams.category);
   const selectedBoutiques = toArray(rawParams.boutique);
   const selectedColors = toArray(rawParams.color);
   const selectedCities = toArray(rawParams.city);
@@ -595,8 +595,15 @@ export default async function RentalsPage({ searchParams }: PageProps) {
   const selectedPrices = toArray(rawParams.price);
   const selectedSort = toArray(rawParams.sort)[0] || sortOptions[0];
   const selectedSection = toArray(rawParams.section)[0]?.toLowerCase();
-  const selectedQuery = toArray(rawParams.q)[0] ?? "";
+  let selectedQuery = toArray(rawParams.q)[0] ?? "";
   const selectedMatchMode = (toArray(rawParams.match)[0] ?? "").toLowerCase();
+
+  // Auto-map "ethnic" search to Traditional Wear category and clear the search query
+  if (selectedQuery.toLowerCase().includes("ethnic") && !selectedCategories.includes("Traditional Wear")) {
+    selectedCategories = [...selectedCategories, "Traditional Wear"];
+    selectedQuery = ""; // Clear query to avoid text matching conflict
+  }
+
   const currentParamEntriesWithoutSort = Array.from(currentParams.entries()).filter(([key]) => key !== "sort");
 
   const rentals = await getRentals();

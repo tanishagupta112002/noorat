@@ -30,7 +30,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="w-full bg-white/50 px-3 py-10 lg:px-20 lg:py-14">
+    <section className="w-full bg-white/50 px-4 py-8 lg:px-20 lg:py-14">
       <div className="text-center">
         <h2 className="text-3xl font-semibold tracking-[0.05em] text-foreground">
           How Noorat Works
@@ -38,7 +38,7 @@ export default function HowItWorks() {
         <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-foreground/70" />
       </div>
 
-      <div className="mt-10 grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {steps.map((step, index) => {
           const Icon = step.icon;
 

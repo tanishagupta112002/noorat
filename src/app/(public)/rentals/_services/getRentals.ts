@@ -23,6 +23,7 @@ const listingCardSelect = {
 			city: true,
 			state: true,
 			pincode: true,
+			providerType: true,
 		},
 	},
 } satisfies Prisma.ListingSelect;
@@ -47,6 +48,7 @@ export type PublicRental = {
 	providerPincode: string;
 	providerAddress: string | null;
 	providerShopImage: string | null;
+	providerType: "BOUTIQUE" | "RENTAL" | null;
 	description: string;
 	rating: number;
 	reviewCount: number;
@@ -126,6 +128,7 @@ function toPublicRental(listing: ListingRow, stats?: ListingReviewStat): PublicR
 		providerShopImage: listing.provider.shopImage || null,
 		providerState: listing.provider.state?.trim() || "",
 		providerPincode: (listing.provider.pincode || "").replace(/\D/g, "").slice(0, 6),
+		providerType: (listing.provider.providerType as "BOUTIQUE" | "RENTAL" | null) ?? null,
 		description,
 		rating: stats?.rating ?? 0,
 		reviewCount: stats?.reviewCount ?? 0,
