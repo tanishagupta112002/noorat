@@ -182,7 +182,7 @@ export function MinimalAIComposer() {
       const res = await fetch("/api/custom-requests/preview", {
         method: "POST",
         body,
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(30000),
       });
 
       const payload = (await res.json()) as PreviewApiResponse;

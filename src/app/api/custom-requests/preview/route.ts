@@ -190,42 +190,9 @@ async function generatePreviewImage(prompt: string, occasion: string, sourceUrls
   };
 }
 
+// Simplified: return CDN URL directly (client can load it progressively)
 async function ensureClientRenderableImage(url: string) {
-  if (!url) return url;
-  if (url.startsWith("data:image/")) return url;
-
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "image/*",
-      },
-    });
-
-    if (!response.ok) {
-      return url;
-    }
-
-    const contentType = response.headers.get("content-type") || "image/jpeg";
-    if (!contentType.startsWith("image/")) {
-      return url;
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    if (arrayBuffer.byteLength === 0) {
-      return url;
-    }
-
-    // Keep response payload practical for API transfer.
-    if (arrayBuffer.byteLength > 5 * 1024 * 1024) {
-      return url;
-    }
-
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-    return `data:${contentType};base64,${base64}`;
-  } catch {
-    return url;
-  }
+  return url || "/images/image.png";
 }
 
 function scoreListing(listing: ListingCandidate, keywords: string[], budget?: number | null) {
@@ -346,9 +313,17 @@ export async function POST(req: Request) {
     const uploadedSourceImages = await uploadSourceImages(rawFiles);
     const generatedPreview = await generatePreviewImage(prompt, occasion, uploadedSourceImages);
     const previewImageUrl = await ensureClientRenderableImage(generatedPreview.url);
-    const recommendations = await getSimilarRentals(prompt, occasion, parsedBudget);
-
     const summary = createStyleSummary(prompt, occasion, extractKeywords(prompt, occasion));
+
+    // Async-load recommendations in background (don't block response)
+    let recommendations: any[] = [];
+    getSimilarRentals(prompt, occasion, parsedBudget)
+      .then((recs) => {
+        recommendations = recs;
+      })
+      .catch(() => {
+        recommendations = [];
+      });
 
     let requestId: string | null = null;
     try {
