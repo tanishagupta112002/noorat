@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   ChevronRight,
   Heart,
+  Images,
   LogOut,
   Package,
   Settings,
@@ -47,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { href: "/orders", label: "My Orders", tag: "Orders", icon: Package },
     { href: "/profile", label: "Profile Information", tag: "Account", icon: UserRound },
+    { href: "/ai-generated-dresses", label: "AI Generated Dresses", tag: "Account", icon: Images },
     { href: "/wishlist", label: "My Wishlist", tag: "Account", icon: Heart },
     { href: "/cart", label: "My Cart", tag: "Account", icon: ShoppingCart },
     { href: "/settings", label: "Account Settings", tag: "Payments", icon: Settings },

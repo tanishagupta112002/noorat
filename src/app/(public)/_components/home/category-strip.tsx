@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -6,7 +7,7 @@ const categories = [
     id: "bridal",
     title: "Bridal",
     subtitle: "Celebrate Your Day",
-    image: "/images/hero/i1.png",
+    image: "/images/Categories/bridal.png",
     href: "/rentals/bridal",
     cta: "Shop Now",
   },
@@ -14,7 +15,7 @@ const categories = [
     id: "western",
     title: "Western",
     subtitle: "Modern & Chic",
-    image: "/images/hero/i2.png",
+    image: "/images/Categories/Western.png",
     href: "/rentals/western",
     cta: "Explore",
   },
@@ -22,7 +23,7 @@ const categories = [
     id: "traditional",
     title: "Traditional",
     subtitle: "Timeless Heritage",
-    image: "/images/hero/i3.png",
+    image: "/images/Categories/Traditional.png",
     href: "/rentals/ethnic",
     cta: "Discover",
   },
@@ -43,16 +44,16 @@ export default function CategoryStrip() {
       </div>
 
       {/* Horizontal Scroll Carousel */}
-      <div className="mt-6 overflow-x-auto lg:mt-8">
-        <div className="flex gap-3 pb-2 sm:gap-4 lg:gap-6">
+      <div className="mt-6 overflow-x-auto md:overflow-visible lg:mt-8">
+        <div className="flex gap-3 pb-2 sm:gap-4 md:grid md:grid-cols-3 md:gap-4 md:pb-0 lg:gap-6">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={category.href}
-              className="group relative min-w-70 shrink-0 overflow-hidden rounded-lg sm:min-w-90 lg:min-w-105"
+              className="group relative min-w-56 shrink-0 overflow-hidden rounded-lg sm:min-w-64 md:min-w-0 md:w-full"
             >
               {/* Image */}
-              <div className="relative h-48 w-full overflow-hidden bg-gray-100 sm:h-64 lg:h-80">
+              <div className="relative h-72 w-full overflow-hidden bg-gray-100 sm:h-96 md:h-112 lg:h-136">
                 <Image
                   src={category.image}
                   alt={category.title}
@@ -62,7 +63,7 @@ export default function CategoryStrip() {
               </div>
 
               {/* Text Overlay - Centered Bottom */}
-              <div className="absolute inset-0 flex flex-col items-center justify-end bg-linear-to-t from-black/60 via-transparent to-transparent px-4 py-4 sm:py-6 lg:py-8">
+              <div className="absolute inset-0 flex flex-col items-center justify-end bg-linear-to-t from-black/85 via-black/20 to-transparent px-4 py-4 sm:py-6 lg:py-8">
                 <h3 className="text-xl font-bold text-white sm:text-2xl lg:text-3xl">
                   {category.title}
                 </h3>
@@ -79,6 +80,16 @@ export default function CategoryStrip() {
           ))}
         </div>
       </div>
+
+      <div className="mt-4 text-center">
+          <Link
+            href="/rentals"
+            className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-tight text-primary underline underline-offset-4"
+          >
+            View All
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </div>
     </section>
   );
 }

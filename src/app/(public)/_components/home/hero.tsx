@@ -21,8 +21,8 @@ const slides = [
   },
   {
     title: "Design Your Dream Outfit",
-    subtitle: "Use AI to create your perfect fashion piece.",
-    image: "/images/hero/i3.png",
+    subtitle: "Use AI to create your perfect\nfashion piece.",
+    image: "/images/hero/image1.png",
     primary: { label: "Try AI Design", href: "/custom-requests" },
   },
 ];
@@ -39,7 +39,7 @@ export default function Hero() {
   };
 
   useEffect(() => {
-    const timer = setInterval(next, 6000);
+    const timer = setInterval(next, 3000);
     return () => clearInterval(timer);
   }, []);
 
@@ -65,13 +65,13 @@ export default function Hero() {
               <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-transparent"></div>
             </div>
             {/* Content */}
-            <div className="relative h-full max-w-7xl mx-auto px-14 sm:px-20 lg:px-6 flex items-start py-6 sm:py-25 md:py-25 lg:py-45">
-              <div className="max-w-45 sm:max-w-80 md:max-w-95 lg:max-w-160 space-y-1 lg:space-y-4">
+            <div className="relative h-full max-w-7xl mx-auto px-8 sm:px-20 lg:px-4 flex items-start py-6 sm:py-25 md:py-25 lg:py-40">
+              <div className="max-w-45 sm:max-w-80 md:max-w-80 lg:max-w-160 space-y-1 lg:space-y-4">
                 <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-secondary leading-tight">
                   {slide.title}
                 </h1>
 
-                <p className="text-xs sm:text-lg md:text-2xl lg:text-2xl text-accent-foreground">
+                <p className="text-xs sm:text-lg md:text-2xl lg:text-2xl whitespace-pre-line text-accent-foreground">
                   {slide.subtitle}
                 </p>
 

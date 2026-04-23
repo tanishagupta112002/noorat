@@ -350,9 +350,31 @@ export async function POST(req: Request) {
 
     const summary = createStyleSummary(prompt, occasion, extractKeywords(prompt, occasion));
 
+    let requestId: string | null = null;
+    try {
+      const created = await prisma.customRequest.create({
+        data: {
+          userId,
+          inputType: rawFiles.length > 0 ? "image" : "text",
+          originalPrompt: prompt,
+          uploadedImageUrl: uploadedSourceImages[0] || null,
+          previewSource: generatedPreview.source,
+          occasion,
+          occasionDetected: occasion,
+          budget: parsedBudget,
+          currentPreviewUrl: previewImageUrl,
+          status: "preview_ready",
+        },
+      });
+      requestId = created.id;
+    } catch (dbError) {
+      console.error("[custom-requests/preview] db save failed", dbError);
+    }
+
     return Response.json({
       success: true,
       data: {
+        requestId,
         prompt,
         occasion,
         budget: parsedBudget,
