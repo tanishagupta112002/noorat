@@ -5,6 +5,16 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTimeout } from "@/lib/server-timeout";
 
+type SavedLook = {
+  id: string;
+  resultImageUrl: string;
+  promptUsed: string;
+  createdAt: Date;
+  request: {
+    originalPrompt: string;
+  } | null;
+};
+
 export default async function AIGeneratedDressesPage() {
   const requestHeaders = await headers();
   const session = (await withTimeout(
@@ -18,7 +28,7 @@ export default async function AIGeneratedDressesPage() {
   }
 
   const db = prisma as any;
-  const savedLooks = await withTimeout(
+  const savedLooks = (await withTimeout(
     db.customRequestRefinement.findMany({
       where: {
         action: "save",
@@ -40,7 +50,7 @@ export default async function AIGeneratedDressesPage() {
     }),
     12000,
     "Saved AI generated dresses query",
-  );
+  )) as SavedLook[];
 
   return (
     <div>
@@ -61,7 +71,7 @@ export default async function AIGeneratedDressesPage() {
         </div>
       ) : (
         <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {savedLooks.map((look: any) => (
+          {savedLooks.map((look) => (
             <article key={look.id} className="rounded-sm border border-[#ececec] bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
               <div className="flex items-start gap-3">
                 <div className="h-40 w-48 shrink-0 overflow-hidden rounded-xl bg-muted">
